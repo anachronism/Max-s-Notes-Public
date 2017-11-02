@@ -1,6 +1,14 @@
-#Full Motion video Datasets:
+# General Notes:
+* Potential useful libraries.
+	- Pytorch.
+	- Caffe
+	- Tensorflow (obvs)
+	- Pandas
+* Hyperparameters stuff
+	- Google hypertune
+	- Sigopt
 
-#Detection + tracking lab:
+# Full Motion video Datasets:Detection + tracking lab:
 ## To get from it.
 * Format FMV data + annotations,
 * Set up obj detect pipeline in TF
@@ -137,3 +145,9 @@
 	- Can do with theano.
 
 ### Architect LSTM
+* Not really much to add here, will include parts from actual presentation.
+* ROC curves used to compare to other standards.
+
+## Takeaways
+* Must condition data in a way that makes sense to the specific data.
+* Even with only a few epochs, still decent results.
