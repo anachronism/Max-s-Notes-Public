@@ -9,7 +9,7 @@ dim = 30;
 [x_norm,pcaSpace,lambda] = pca_50x50(images,dim);
 x_encoded = pcaSpace.' * x_norm.';
 % Assume testData is in the same format as x_norm.
-labels = nearestNeighbors(testData,x_encoded,pcaSpace);
+label = nearestNeighbors(testData,x_encoded,pcaSpace);
 
 % Look at eigenfaces generated.
 x_mean = mean(x_norm,1);

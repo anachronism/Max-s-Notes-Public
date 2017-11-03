@@ -1,7 +1,6 @@
 %% pca_50x50. Vectorize and run PCA on the images. 
 % Inputs:
-% images:   Cell Array of BW images. First dim is the index of the image, the 
-%           other two are the dims of the image itself (50x50).
+% Outputs:
 function [x_norm,eig_vec,lambda] = pca_50x50(images,d)
     num_img = length(images);
     x = zeros(num_img, 2500);
