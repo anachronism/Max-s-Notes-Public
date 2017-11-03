@@ -8,6 +8,45 @@
 	- Google hypertune
 	- Sigopt
 
+# Talk Notes:
+* Smart Cities and AI:
+	- With ML, video processing has improved a lot.
+	- There are 3 main modalities of ML. 
+		- On sensor (on the edge).
+			* Jetson, embedded context
+			* Can keep things anonymous.
+		- On premise servers.
+			* Graphics card level, tesla cards.
+		- Cloud based servers.
+			* Crazy multi-card setups.
+* GTA as training dataset generation.
+	- Shown qualitatively works well on real world data.
+* Neural networks for Microscopy Segmentation.
+	- Segmentation is mainly partitioning pixels into groups, and then labeling the groups.
+		- Gives insight to complex biology systems.
+	- Encoder/Decoder sets are useful, better than CNNs.
+		- Encoding is convolution and padding, makes multi-scale feature detection.
+		- Decoding is convolution, transposed convolution (upsampling), used to synthesize new features. (in this case, segmentation map.)
+	- There are a lot of hyperparameters (architecture options)
+	- Two main design problems:
+		- Learning. Optimize network weight parameters.
+			* Generally cheap to evaluate.
+			* easy, typically differentiable objective function.
+		- Architecture. Choosing various parameter options.
+			* Mixture of continuous and discrete parameters
+			* objective function not differentiable.
+			* Computationally expensive, as it's an unstructured search.
+	- Genenet being developed, turning a "genegraph" into computation graph.
+		- Genes are small modules of calculations, in a tree setup doing some simple calculations.
+		- Parameters trickle through from the root, and each node saves the delta of the parameter from its parent node.
+		- This allows for changing one parameter at a higher level node to result in fairly random gene generation.
+
+	* Deep learning with graphs.	
+		- Some optimization based on graph type to speed up processing.
+		- Most interesting part to me is ghe generation of cfg's that may be problematic, using some generative method.
+		- Email seas.gwu.edu/~howie
+		
+
 # Full Motion video Datasets:Detection + tracking lab:
 ## To get from it.
 * Format FMV data + annotations,
