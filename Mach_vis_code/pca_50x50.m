@@ -1,23 +1,31 @@
 %% pca_50x50. Vectorize and run PCA on the images. 
 % Inputs:
-% images:   Array of BW images. First dim is the index of the image, the 
-%           other two are the dims of the image itself (50x50).
-function [eig_vec,lambda_sorted] = pca_50x50(images,d)
-    x = reshape(images, [2500, size(images,1)]); % CHECK THAT THIS RESHAPE ACTUALLY WORKS
-    % SCALE x
-    x_mean = 1/size(images,1) * sum(images,2); % Average the image. 
-    
-    %% Make non-iterative
-    cov = zeros(size(images,2),size(images,2));
+% Outputs:
+function [x_norm,eig_vec,lambda] = pca_50x50(images,d)
+    num_img = length(images);
     for i = 1:size(images,1)
-        cov = cov + (x(:,i)-x_mean) * (x(:,i)-x_mean).';
+        for j = 1:size(images,2)
+            tmp = images{i,j};
+            images{i,j} = (tmp - mean2(tmp))/std2(tmp);
+        end
     end
-    cov = cov .* 1/size(images,1);
+    x = cell2feat(images);
+    x_norm = zeros(num_img,2500);
     
-    [u,lambda] = eig(cov.'*cov);
-    [lambda_sorted, ind] = sort(lambda,'descend');
-    u_sorted = u(ind);
-    v = u_sorted.'*x;
-    eig_vec = v(1:d);
+
+    x_mean = mean(x,1);    
+    mean_rep = repmat(x_mean,num_img,1);
+    x_noMean = x - mean_rep;
+    x_norm = x_noMean;
+    cov = ( x_noMean * x_noMean.'); %Should I normalize by 1/n?
+    [U,L] = eig(cov);
+    
+    U = rot90(rot90(U));
+    eig_vec = x_noMean.'*U;
+    
+    eig_vec = eig_vec(:,1:d);
+    %eig_vec = rot90(rot90(eig_vec));
+    lambda = L(:,end-d+1:end);
+    lambda = rot90(rot90(lambda));
     
 end
