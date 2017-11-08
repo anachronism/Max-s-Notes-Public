@@ -3,20 +3,29 @@
 % Outputs:
 function [x_norm,eig_vec,lambda] = pca_50x50(images,d)
     num_img = length(images);
-    x = zeros(num_img, 2500);
-    x_norm = zeros(num_img,2500);
-
-    for i = 1:num_img
-        x(i,:) = reshape(images{i},[1,2500]);
-        x_norm(i,:) = (x(i,:) - mean(x(i,:)))/std(x(i,:));
+    for i = 1:size(images,1)
+        for j = 1:size(images,2)
+            tmp = images{i,j};
+            images{i,j} = (tmp - mean2(tmp))/std2(tmp);
+        end
     end
-   
-    x_mean = mean(x,1);
+    x = cell2feat(images);
+    x_norm = zeros(num_img,2500);
+    
+
+    x_mean = mean(x,1);    
     mean_rep = repmat(x_mean,num_img,1);
-    x_noMean = x_norm - mean_rep;
-    cov = 1/(num_img-1) *( x_noMean.' * x_noMean); %There may be a trick discussed in the class about this part.
-    [U,V] = eig(cov);
-    eig_vec = U(:,1:d);
-    lambda = V(:,1:d);
+    x_noMean = x - mean_rep;
+    x_norm = x_noMean;
+    cov = ( x_noMean * x_noMean.'); %Should I normalize by 1/n?
+    [U,L] = eig(cov);
+    
+    U = rot90(rot90(U));
+    eig_vec = x_noMean.'*U;
+    
+    eig_vec = eig_vec(:,1:d);
+    %eig_vec = rot90(rot90(eig_vec));
+    lambda = L(:,end-d+1:end);
+    lambda = rot90(rot90(lambda));
     
 end

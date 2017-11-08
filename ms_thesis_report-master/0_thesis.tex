@@ -1,0 +1,231 @@
+% This is a template for  Masters' Theses at WPI.
+% It complies (more or less) to the standards given by the Library 
+% (as of February 1999)
+%
+% Feel free to use this file, but I give no guarantee for its compliance
+% to standards (meaning I won't pay for the paper if the library rejects it :))
+%
+%
+% The lengths (textheight, width etc.) are fine-tuned for ps1, ps2, and ps3, 
+% but seem to be somewhat dependent on the machine you are using to compile, 
+% the date, time, moon phase, the weather, and other quantum effects.
+% You may have to change \oddsidemargin a little, but it's about 98% correct.
+%
+% Also, the spacing is correct (doublespacing with footnotes correctly
+% singlespaced). Curiously, the font size is not specified in the
+% regulations. So feel free to change it, but the majority of theses
+% that I have seen is written in 12 point font.
+% 
+% As for the inclusion of graphics, I recommend the methods specified
+% in ``latexguide.ps'' off the CS-GSO Website. You can use other
+% methods including copy and paste with a photocopier, but I think
+% using the graphicx package is the easiest.
+%
+% Have fun and good luck with the thesis.
+%
+%
+%  Andreas Koeller (koeller@wpi.edu)
+%
+%
+%
+
+% The preamble
+\documentclass[12pt]{report}
+
+% this enables correct linespacing and graphics inclusion via 
+%``\includegraphics''
+\usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{wrapfig}
+\usepackage{acronym}
+\restylefloat{figure}
+\usepackage{cite}
+\usepackage{gensymb}
+\usepackage{url}
+\usepackage{hyperref}
+\usepackage[toc]{glossaries}
+\usepackage[toc,page]{appendix}
+\usepackage{caption}
+\usepackage{amsmath} % Matrices
+\usepackage{subcaption}
+\usepackage{pdflscape}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage[nottoc,numbib]{tocbibind}
+%Code settings:
+\usepackage{listings}
+\usepackage{color}
+\usepackage{pdfpages}
+\usepackage{soul} %For highlighting, can remove later
+% Fix quotes
+\usepackage [english]{babel}
+\usepackage [autostyle, english = american]{csquotes}
+\MakeOuterQuote{"}
+ 
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\tiny,
+    breakatwhitespace=false,         
+    breaklines=true,  
+    frame=none,               
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,
+    framexleftmargin=5pt,                 
+    tabsize=2
+}
+\lstset{style=mystyle}
+%end code settings
+\captionsetup[table]{skip=10pt}
+% leave 1.5in margin to the left and 1in margin to the other
+% sides. Don't print page number in the margin (but rather above it)
+\setlength{\textheight}{8.63in}
+\setlength{\textwidth}{5.9in}
+\setlength{\topmargin}{-0.2in}
+\setlength{\oddsidemargin}{0.3in}
+\setlength{\evensidemargin}{0.3in}
+\setlength{\headsep}{0.0in}
+
+% Directory for images
+\graphicspath{ {img/} }
+
+\begin{document}
+	% Define \brk as a command for leaving a little vertical space. Makes
+	% the titlepage easier to read - normally, this is NOT GOOD LATEX
+	% STYLE!!!
+	\newcommand{\brk}{\vspace*{0.18in}}
+	
+	% No page number on the title page
+	\thispagestyle{empty}
+	
+	% Center the whole title page
+	\begin{center}
+		
+		\brk
+		
+		% Large font and bold face for the headline. Try to keep it at one or
+		% two lines. Headlines over two lines will mess up the spacing, and you have to
+		% manually finetune it. Note that the line break in the SOURCE CODE
+		% does not affect the line breaking in the output file. If you want
+		% hardcoded line breaks, you have to mark them with a double backslash (\\)
+		
+		{\large 
+			\textbf{
+				WAIT UNTIL THERE'S AN ACTUAL NAME
+			}
+		}		
+		
+		\brk
+		by
+		
+		\brk
+		Max Li
+		
+		\brk
+		\brk
+		A Master's Thesis
+		
+		\brk
+		Submitted to the Faculty 
+		
+		\brk
+		of the
+		
+		\brk
+		\brk
+		WORCESTER POLYTECHNIC INSTITUTE
+		
+		\brk
+		\brk
+		In partial fulfillment of the requirements for the
+		
+		\brk
+		Degree of Master of Science
+		
+		\brk
+		in
+		
+		\brk
+		Electrical and Computer Engineering
+		
+		\brk
+		May 2018/Dec 2018s
+	\end{center}
+	
+	% Remove paragraph indent temporarily
+	\setlength{\parindent}{0pt}
+	\brk
+	\brk
+	\brk
+	APPROVED:\\
+
+	\rule{3in}{0.8pt}\\
+	Professor Alex Wyglinski, WPI ECE, Advisor\\
+
+    \rule{3in}{0.8pt}\\
+	Committee Member \#1\\
+
+    \rule{3in}{0.8pt}\\
+    Committee Member \#2\\
+
+	\setlength{\parindent}{1.5em}
+
+	% end of titlepage
+	\newpage
+	
+	% This is the command for doublespacing when you use the setspace
+	% package
+	% Please do NOT use \baselinestretch, this will mess up everything,
+	% cause earthquakes, tornados and lots of questions for me...
+	% If you need a singlespaced paragraph (BAD STYLE!!!), use
+	% \singlespacing or \onehalfspacing and enclose it together with the
+	% paragraph in braces {\singlespacing This is my text... blah blah blah}
+	%
+	\doublespacing
+	
+	\begin{abstract}
+		TODO. Secondary test edit to see if I can update git in both operating systems.
+	\end{abstract}
+
+	\pagenumbering{roman} % or {Roman} if you like them capitalized
+	
+	\chapter*{Acknowledgements}
+	 TODO x 2
+	\clearpage
+	
+	% Automagic
+	\tableofcontents
+	\listoffigures
+	\listoftables
+	\include{acronyms}
+	\clearpage
+
+	% And we need a clear separation between preface and text, otherwise
+	% the numbering gets confused.
+	\pagenumbering{arabic}
+	\setcounter{page}{1}
+	
+    \include{1_intro}
+	\include{2_background}
+	\include{3_methods}
+	\include{4_results}
+	\include{5_conclusions}
+	
+	\include{6_appendix}
+	
+	% Bibliography
+	\singlespacing
+	\nocite{*}
+	\bibliographystyle{unsrt}
+	\bibliography{7_references}
+	
+\end{document}
