@@ -7,6 +7,7 @@ function [test_eig,labels] = nearestNeighbors(test,comparison,compLabels,eigSpac
     
     labels = zeros(num_tests,1);
     ssd_store = zeros(num_compare,1);
+    test_eig = cell(1,num_tests);
     
     % n by 2500
     for i = 1:num_tests
