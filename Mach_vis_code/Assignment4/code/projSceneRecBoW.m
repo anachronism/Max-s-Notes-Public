@@ -54,8 +54,8 @@ function projSceneRecBoW()
 % FEATURE = 'tiny image';
  FEATURE = 'bag of words';
 
-CLASSIFIER = 'nearest neighbor';
-% CLASSIFIER = 'support vector machine';
+% CLASSIFIER = 'nearest neighbor';
+ CLASSIFIER = 'support vector machine';
 % CLASSIFIER = 'placeholder';
 
 data_path = '../data/'; 
@@ -113,9 +113,23 @@ switch lower(FEATURE)
         end
         
         % YOU CODE get_bags_of_words.m
-        train_image_feats = get_bags_of_words(train_image_paths);
+        if ~exist('train_image_feats.mat','file')
+            fprintf('Getting Training image features.\n')
+            train_image_feats = get_bags_of_words(train_image_paths);
+            save('train_image_feats.mat', 'train_image_feats');
+        else
+            fprintf('Loading training image features\n')
+            load('train_image_feats.mat');
+        end
         % Possibly write out train_image_features here as a *.mat
-        test_image_feats  = get_bags_of_words(test_image_paths);
+        if ~exist('test_image_feats.mat','file')
+            fprintf('Getting Testing image features.\n')
+            test_image_feats  = get_bags_of_words(test_image_paths);
+            save('test_image_feats.mat', 'test_image_feats');
+        else
+            fprintf('Loading test image features\n')
+            load('test_image_feats.mat');
+        end
         % Possibly write out test_image_features here as a *.mat
 
     case 'placeholder'

@@ -37,6 +37,29 @@ function predicted_categories = svm_classify(train_image_feats, train_labels, te
 % 'categories' will not be in the same order as unique() sorts them. This shouldn't really matter, though.
 categories = unique(train_labels);
 num_categories = length(categories);
+ind_compare = 1:length(train_labels);
+predicted_categories_int = zeros(length(test_image_feats),1);
+
+% Train SVM models for each category.
+for i = 1:num_categories
+    index_labels = find(strcmp(train_labels, categories(i)));
+    cat_labels = ismember(ind_compare,index_labels);
+    cat_models{i} = fitcsvm(train_image_feats,cat_labels,'ClassNames',[false true],'Standardize',true,...
+        'KernelFunction','rbf','BoxConstraint',1);
+end
 
 
+% Classify test images based on the svm's that were trained.
+for i = 1:length(test_image_feats)
+    confidence = zeros(1,num_categories);
+    for j = 1:num_categories
+        [~,conf_cat] = predict(cat_models{j},test_image_feats(i,:));
+        confidence(j) = conf_cat(2);
+        %confidence(j) = dot(cat_models{j}.Beta,test_image_feats(i,:)) + cat_models{j}.Bias; 
+    end
+    [~,predicted_categories_int(i)] = max(confidence);
+end
+
+%%% Change this to be the actual labels.
+predicted_categories = categories(predicted_categories_int);
 
