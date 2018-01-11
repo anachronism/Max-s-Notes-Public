@@ -45,7 +45,7 @@ for i = 1:num_categories
     index_labels = find(strcmp(train_labels, categories(i)));
     cat_labels = ismember(ind_compare,index_labels);
     cat_models{i} = fitcsvm(train_image_feats,cat_labels,'ClassNames',[false true],'Standardize',true,...
-        'KernelFunction','rbf','BoxConstraint',1);
+        'KernelFunction','rbf'); % A linear kernel I think fits the fitclinear, couldn't get a better result that way though.
 end
 
 
