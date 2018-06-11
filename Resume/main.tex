@@ -1,0 +1,166 @@
+%% start of file `template.tex'.
+%% Copyright 2006-2013 Xavier Danaux (xdanaux@gmail.com).
+%
+% This work may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License version 1.3c,
+% available at http://www.latex-project.org/lppl/.
+
+\documentclass[11pt,a4paper,sans]{moderncv}        % possible options include font size ('10pt', '11pt' and '12pt'), paper size ('a4paper', 'letterpaper', 'a5paper', 'legalpaper', 'executivepaper' and 'landscape') and font family ('sans' and 'roman')
+
+% modern themes
+\moderncvstyle{banking}                            % style options are 'casual' (default), 'classic', 'oldstyle' and 'banking'
+%\moderncvstyle{classic}
+%\moderncvcolor{blue}                                % color options 'blue' (default), 'orange', 'green', 'red', 'purple', 'grey' and 'black'
+\moderncvcolor{blue}
+%\renewcommand{\familydefault}{\sfdefault}         % to set the default font; use '\sfdefault' for the default sans serif font, '\rmdefault' for the default roman one, or any tex font name
+%\nopagenumbers{}                                  % uncomment to suppress automatic page numbering for CVs longer than one page
+
+% character encoding
+\usepackage[utf8]{inputenc}                       % if you are not using xelatex ou lualatex, replace by the encoding you are using
+\usepackage{enumitem}
+%\usepackage{CJKutf8}                              % if you need to use CJK to typeset your resume in Chinese, Japanese or Korean
+
+% adjust the page margins
+\usepackage[scale=0.75,margin=0.70in]{geometry}
+%\setlength{\hintscolumnwidth}{3cm}                % if you want to change the width of the column with the dates
+%\setlength{\makecvtitlenamewidth}{10cm}           % for the 'classic' style, if you want to force the width allocated to your name and avoid line breaks. be careful though, the length is normally calculated to avoid any overlap with your personal info; use this at your own typographical risks...
+
+\usepackage{import}
+%\renewcommand*{\namefont}{\fontsize{38}{40}\mdseries\upshape}
+% personal data
+\name{Max}{H. Li}
+%\title{Curriculum Vitae}                               % optional, remove / comment the line if not wanted
+\address{14 Acorn Drive, Andover, MA 01810}{}{}% optional, remove / comment the line if not wanted; the "postcode city" and and "country" arguments can be omitted or provided empty
+\phone[mobile]{+1 978-277-8942}                   % optional, remove / comment the line if not wanted
+\email{mhli@wpi.edu}                               % optional, remove / comment the line if not wanted
+%\extrainfo{additional information}                 % optional, remove / comment the line if not wanted
+%\photo[64pt][0.4pt]{picture}                       % optional, remove / comment the line if not wanted; '64pt' is the height the picture must be resized to, 0.4pt is the thickness of the frame around it (put it to 0pt for no frame) and 'picture' is the name of the picture file
+%\quote{Some quote}                                 % optional, remove / comment the line if not wanted
+
+% to show numerical labels in the bibliography (default is to show no labels); only useful if you make citations in your resume
+%\makeatletter
+%\renewcommand*{\bibliographyitemlabel}{\@biblabel{\arabic{enumiv}}}
+%\makeatother
+%\renewcommand*{\bibliographyitemlabel}{[\arabic{enumiv}]}% CONSIDER REPLACING THE ABOVE BY THIS
+
+% bibliography with mutiple entries
+%\usepackage{multibib}
+%\newcites{book,misc}{{Books},{Others}}
+%----------------------------------------------------------------------------------
+%            content
+%----------------------------------------------------------------------------------
+\begin{document}
+%\begin{CJK*}{UTF8}{gbsn}                          % to typeset your resume in Chinese using CJK
+%-----       resume       ---------------------------------------------------------
+\makecvtitle
+
+\small{Graduate electrical and computer engineer completing the final year of a M.S. degree. Concentrations in Machine Learning, Software Defined Radio, Digital Signal Processing, and Embedded Systems.}
+
+\section{Work History}
+\begin{itemize}[label={}]
+\item{\cventry{May 2017--June 2018}{Signal Processing Intern}{Systems and Technology Research}{Woburn, MA}{}{\vspace{3pt}Filler text about what I did on LADS}}
+\item{\cventry{April 2015--Present}{Undergraduate Research Assistant}{Signal Processing and Information Networking Laboratory(SPINLab at WPI)}{Worcester, MA}{}{\vspace{3pt}Worked on various projects, including a real-time timestamp-free syncronization technique and a real-time FM demodulator.}}
+
+\vspace{5pt}
+
+\item{\cventry{2009--2014}{Engineering Intern}{Nexcelom Bioscience}{Lawrence, MA}{}{\vspace{3pt}Optimized a Windows Embedded 7 system to use Hibernate Once Resume Many for a new product. Sourced components for image based cytometry instrumentation.}}
+
+
+\end{itemize}
+
+\section{Education}
+
+%\vspace{2pt}
+
+\subsection{Academic Qualifications}
+
+%\vspace{5pt}
+
+\begin{itemize}[label={}]
+
+\item{\cventry{2013--Present}{BS Electrical and Computer Engineering, \textit{GPA: 3.64}}{Worcester Polytechnic Institute}{Worcester, MA}{\textit{Deans List, Fall 2013--present}}{\textbf{A Selection of Classes Taken:} Computer Vision, Artificial Intelligence, Detection and Estimation Theory, Real-Time Digital Signal Processing, Advanced Digital System Design with FPGAs, Principles of Communication Systems, Introduction to Cryptography and Communication Security }{} \vspace{3pt}}
+
+\item{\cventry{2009--2013}{High School Diploma}{Andover High School}{Andover, MA}{}{}}
+
+\end{itemize}
+
+\subsection{Notable Projects}
+
+%\vspace{5pt}
+
+\begin{itemize}[label={}]
+\item{\textbf{Masters Thesis:} \textit{'FIX TITLE'}
+
+%\vspace{3pt}
+
+\small{FILLER FOR THESIS }}
+
+\item{\textbf{Major Qualifying Project:} \textit{'Multi-Purpose Aerial Software Defined Radio'}
+
+%\vspace{3pt}
+
+\small{Finalist for ECE Provost MQP award. Worked on a team of 5 to design an aerial platform for spectrum sensing. Potential uses for the platform include lost hiker location and channel modeling. }}
+
+\item{\textbf{Interactive Qualifying Project:} \textit{'Evaluating Smart City Development in Kowloon East'}
+
+%\vspace{3pt}
+
+\small{Worked on a team of 4 to evaluate the modernization of a district of Hong Kong, focusing on ease of pedestrian travel within the region. Presented to the government office responsible for development.}}
+
+%\vspace{3pt}
+
+\item{\textbf{Publication with SPINlab:}\textit{'Real-Time Implementation of Timestamp-Free Synchronization'}
+
+%\vspace{3pt}
+
+\small{Used C to program two TI DSP boards to synchronize software clocks to within 10 ns mean and standard deviation. Presented resulting paper at the Asilomar Conference on Signals, Systems and Computers, held in Monterey, CA in November 2015.}}
+
+\end{itemize}
+
+\section{Technical and Professional Skills}
+
+\vspace{3pt}
+
+\begin{itemize}[label={}]
+
+\item \textbf{Programming Languages: }Python, Matlab, C, C++, Verilog, TeX, x86 Assembly, VHDL, Java.
+\vspace{3pt}
+
+\item \textbf{General Business Skills:} Good presentation skills; Works well in a team; Can write well-organized and structured reports.
+
+\end{itemize}
+
+\section{Interests and Extra-Curricular Activities}
+
+%\vspace{3pt}
+
+\begin{itemize}
+
+\item{Served as General Manager and Music Director of Campus Radio.}
+\item{Achieved the rank of Eagle Scout, as recognized by the Boy Scouts of America.}
+\item{Member of Eta Kappa Nu, Gamma Delta chapter}
+
+\end{itemize}
+
+% Publications from a BibTeX file without multibib
+%  for numerical labels: \renewcommand{\bibliographyitemlabel}{\@biblabel{\arabic{enumiv}}}% CONSIDER MERGING WITH PREAMBLE PART
+%  to redefine the heading string ("Publications"): \renewcommand{\refname}{Articles}
+%\nocite{*}
+%\bibliographystyle{plain}
+%\bibliography{publications}                        % 'publications' is the name of a BibTeX file
+
+% Publications from a BibTeX file using the multibib package
+%\section{Publications}
+%\nocitebook{book1,book2}
+%\bibliographystylebook{plain}
+%\bibliographybook{publications}                   % 'publications' is the name of a BibTeX file
+%\nocitemisc{misc1,misc2,misc3}
+%\bibliographystylemisc{plain}
+%\bibliographymisc{publications}                   % 'publications' is the name of a BibTeX file
+
+%-----       letter       ---------------------------------------------------------
+
+\end{document}
+
+
+%% end of file `template.tex'.
