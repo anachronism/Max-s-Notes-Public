@@ -8,21 +8,21 @@
 
 #include <mlpack/methods/ann/init_rules/random_init.hpp>
 
-#include <mlpack/methods/ann/layer/linear_layer.hpp>
+#include <mlpack/methods/ann/layer/linear.hpp>
 #include <mlpack/methods/ann/layer/base_layer.hpp>
-#include <mlpack/methods/ann/layer/identity_output_layer.hpp>
+//#include <mlpack/methods/ann/layer/identity_output_layer.hpp>
 
 #include <mlpack/methods/ann/ffn.hpp>
-#include <mlpack/methods/ann/performance_functions/mse_function.hpp>
+#include <mlpack/methods/ann/loss_functions/mean_squared_error.hpp>
 #include <mlpack/core/optimizers/rmsprop/rmsprop.hpp>
 #include <mlpack/core/optimizers/gradient_descent/gradient_descent.hpp>
-#include <mlpack/core/optimizers/adadelta/ada_delta.hpp>
+#include <mlpack/core/optimizers/ada_delta/ada_delta.hpp>
 #include <mlpack/core/optimizers/sgd/sgd.hpp>
 
-#include </home/tim/Desktop/rlnn4/ThreeLayerNetwork.cpp>
-#include </home/tim/Desktop/rlnn4/TwoLayerNetwork.cpp>
-#include </home/tim/Desktop/rlnn4/Logging.hpp>
-#include </home/tim/Desktop/rlnn4/FeedForwardNetwork.cpp>
+#include "/home/max/Documents/Max-s-Notes/NASA Code/rlnn4/ThreeLayerNetwork.cpp"
+#include "/home/max/Documents/Max-s-Notes/NASA Code/rlnn4/TwoLayerNetwork.cpp"
+#include "/home/max/Documents/Max-s-Notes/NASA Code/rlnn4/Logging.hpp"
+#include "/home/max/Documents/Max-s-Notes/NASA Code/rlnn4/FeedForwardNetwork.cpp"
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>

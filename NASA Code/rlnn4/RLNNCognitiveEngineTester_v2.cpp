@@ -1,11 +1,12 @@
 #include <mlpack/core.hpp>
-#include </home/tim/Desktop/rlnn4/RLNNCognitiveEngine.cpp>
-#include </home/tim/Desktop/rlnn4/UDPServer.cpp>
-#include </home/tim/Desktop/rlnn4/ViaSatDriver.cpp>
-#include </home/tim/Desktop/rlnn4/EthUDPTransmitterSimple.cpp>
-#include </home/tim/Desktop/rlnn4/ML605Driver.cpp>
-#include </home/tim/Desktop/rlnn4/Logging.hpp>
-#include </home/tim/Desktop/rlnn4/ASRPDriver.cpp>
+#include "/home/max/Documents/Max-s-Notes/NASA Code/rlnn4/RLNNCognitiveEngine.cpp" 
+#include </home/max/Documents/RLNNCognitiveEngine.cpp> 
+#include </home/max/Documents/Max-s-Notes/NASA\ Code/rlnn4/UDPServer.cpp>
+#include </home/max/Documents/Max-s-Notes/NASA\ Code/rlnn4/ViaSatDriver.cpp>
+#include </home/max/Documents/Max-s-Notes/NASA\ Code/rlnn4/EthUDPTransmitterSimple.cpp>
+#include </home/max/Documents/Max-s-Notes/NASA\ Code/rlnn4/ML605Driver.cpp>
+#include </home/max/Documents/Max-s-Notes/NASA\ Code/rlnn4/Logging.hpp>
+#include </home/max/Documents/Max-s-Notes/NASA\ Code/rlnn4/ASRPDriver.cpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <fstream>
