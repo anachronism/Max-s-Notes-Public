@@ -1,6 +1,6 @@
 #include <mlpack/core.hpp>
 
-#include "/home/max/Documents/Max-s-Notes/NASA Code/rlnn4/Logging.hpp"
+#include </home/tim/Desktop/rlnn4/Logging.hpp>
 
 #include <iostream>
 
@@ -190,7 +190,7 @@ bool TrainingDataBuffer::addTrainingSample(int actionID, const arma::colvec & ou
 		//only add if last action is different than current action
 		if(_lastActionID != actionID) {
 			arma::uvec newerTimestamps = find(_buffActionIDTime.row(1) < _buffActionIDTime(1,currActionIdx(0)));
-			arma::Row<long long unsigned int> onesVec = arma::ones<arma::Row<long long unsigned int>>(newerTimestamps.n_elem);
+			arma::Row<unsigned int> onesVec = arma::ones<arma::Row<unsigned int>>(newerTimestamps.n_elem);
 			//add 1 to all newer timestamps than the found Action IDX
 			_buffActionIDTime(onesVec,newerTimestamps) = _buffActionIDTime(onesVec,newerTimestamps) + 1;
 			//add new timestamp
