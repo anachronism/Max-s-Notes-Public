@@ -26,11 +26,11 @@ class TwoLayerNetwork {
 	std::tuple <	ann::LinearLayer<>,
 					ann::BaseLayer<ann::LogisticFunction>,
 					ann::LinearLayer<>,
-					ann::IdentityOutputLayer<>
+					ann::BaseLayer<ann::IdentityFunction>
 				> modules;
 
 	ann::FFN < 	decltype(modules),
-				ann::IdentityOutputLayer<>,
+				ann::IdentityOutputLayer,	   
 				ann::RandomInitialization,
 				ann::MeanSquaredErrorFunction
 			> net;
@@ -40,9 +40,9 @@ class TwoLayerNetwork {
 				modules(ann::LinearLayer<>(inputVectorSize,hiddenLayerSize[0]),
 					ann::BaseLayer<ann::LogisticFunction>(),
 					ann::LinearLayer<>(hiddenLayerSize[0], outputVectorSize),
-					ann::IdentityOutputLayer<>()
+					ann::BaseLayer<ann::IdentityFunction>()
 				   ),
-				net(modules,ann::IdentityOutputLayer<>(),ann::RandomInitialization(),ann::MeanSquaredErrorFunction())
+				net(modules,ann::IdentityOutputLayer(),ann::RandomInitialization(),ann::MeanSquaredErrorFunction())
 			{} //constructor
 
 	private:

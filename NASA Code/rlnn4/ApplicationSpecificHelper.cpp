@@ -411,6 +411,13 @@ void ApplicationSpecificHelper::getFitnessParams(arma::rowvec &params) {
 	for(int i=0; i<params.n_elem; i++) {
 		params(i) = _fitObservedParams(i);
 	}
+
+	//reality check
+	if(params(1) == 0.0) { //if the BER=1
+		for(int i=0; i< params.n_elem; i++) {
+			params(i) = 0.0;
+		}
+	}
 }
 
 void ApplicationSpecificHelper::setFitnessObserved(double fObserved, bool exploitFlag) {
@@ -437,7 +444,7 @@ double ApplicationSpecificHelper::getRollBackThreshold() {
 }
 
 int ApplicationSpecificHelper::returnFallBackAction() {
-
+	std::cout << "falling back" << std::endl;
 	return _fallBackActionID;
 
 }

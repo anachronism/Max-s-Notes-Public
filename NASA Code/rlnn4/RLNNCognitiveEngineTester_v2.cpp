@@ -7,7 +7,7 @@
 #include "/home/max/Documents/Max-s-Notes/NASA Code/rlnn4/Logging.hpp"
 #include "/home/max/Documents/Max-s-Notes/NASA Code/rlnn4/ASRPDriver.cpp"
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <sstream>
+
 #include <fstream>
 
 #include <chrono>
@@ -60,9 +60,10 @@ int main() {
 
 	const bool continueFromFile = false;
 	const bool saveToFile = true;
-	const std::string rlnnLoadFilename = "save_test1";
+	const std::string rlnnLoadFilename = "emergency";
 	const std::string rlnnSaveFilename = "save_test1";
 	const bool SIMULATION_FLAG = true;
+	const bool USE_SNR_PROFILE = true;
 	const bool TX_POWER_PATCH_EN = true;
 	
 	int actionID;
@@ -71,6 +72,7 @@ int main() {
 	arma::Mat<int> actionListIdxs;
 	std::vector<int> actionIDElements;
 	actionIDElements.resize(4);
+	std::vector<double> _snrProfileVec;
 
 	//---------------------------------------------------//
 	//Setting up Params
@@ -88,7 +90,7 @@ int main() {
 	cogEngParams.cogeng_trainFrac = 0.9;
 	cogEngParams.cogeng_pruneFrac = 0.75;
 	cogEngParams.cogeng_fitnessWeights = fitnessWeights;
-	cogEngParams.cogeng_forceExploreThreshold = 0.8;
+	cogEngParams.cogeng_forceExploreThreshold = 0.95;
 
 	//NeuralNetworkPredictor Params
 	cogEngParams.nnExplore_nNets = 1;
@@ -136,16 +138,17 @@ int main() {
 									  << 12 << 13 << 14 << 15 << 16 
 									  << 18 << 19 << 20 << 21 << 22
 									  << 24 << 25 << 26 << 27 << arma::endr;
-	cogEngParams.nnAppSpec_rollOffList << 0.35 << 0.3 << 0.20 <<arma::endr;
+	cogEngParams.nnAppSpec_rollOffList << 0.35 << 0.25 << 0.20 <<arma::endr;
 	double RsMin = 0.5*pow(10,6)/(1+cogEngParams.nnAppSpec_rollOffList.min());//0.5
 	double RsMax = 5*pow(10,6)/(1+cogEngParams.nnAppSpec_rollOffList.max());
 	//cogEngParams.nnAppSpec_symbolRateList = arma::trans(arma::regspace(RsMin,0.1*pow(10,6),RsMax)); //0.1MHz spacing
-	cogEngParams.nnAppSpec_symbolRateList <<(2.0*pow(10,6))<<arma::endr;
+	cogEngParams.nnAppSpec_symbolRateList <<(1.0*pow(10,6))<<arma::endr;
 	cogEngParams.nnAppSpec_transmitPowerList << -7.5 << -7.0 << -6.5 << -6.0
 											 << -5.5 << -5.0 << -4.5 << -4.0
 											 << -3.5 << -3.0 << -2.5 << -2.0
 											 << -1.5 << -1.0 << -0.5 <<  0.0
 											 << arma::endr;
+	//cogEngParams.nnAppSpec_transmitPowerList << -0.01 << 0.0 << arma::endr;
 	//cogEngParams.nnAppSpec_transmitPowerList = arma::trans(arma::regspace(-10.0,1.0,0.0)); //1.0 dB spacing
 	//TrainingDataBuffer Params
 	cogEngParams.buf_nTrainTestSamples = 200;
@@ -324,6 +327,22 @@ int main() {
 		quitExecution = true;
 	});
 
+
+	//load in SNR Profile (if enabled)
+	if(USE_SNR_PROFILE) {
+		std::string line;
+		std::ifstream snrProfileFile("snrProfile.txt");
+		while(std::getline(snrProfileFile,line)) {
+			std::istringstream ss(line);
+			std::string token;
+
+			while(std::getline(ss,token)) {
+				_snrProfileVec.push_back(std::atof(token.c_str()));
+			}
+		}
+		snrProfileFile.close();
+	}
+
 	//---------------------------------------------------//
 	//Main Execution
 	//---------------------------------------------------//
@@ -331,7 +350,7 @@ int main() {
 	arma::rowvec measurementVec(6);
 	double rcvdEsN0;
 	int i=0;
-	for(int i=0; (i<20000) && (!quitExecution) ; i++) {
+	for(int i=0; (i<10400) && (!quitExecution) ; i++) {
 		#ifdef LOGGING
 		logFile << "::Iteration: " << i << std::endl;
 		logFile << "::Start Time: " << boost::posix_time::microsec_clock::local_time() << std::endl;
@@ -371,12 +390,13 @@ int main() {
 			lastActionID = actionID;
 		}
 
-		std::cout<<i<<": Action Chosen: " << actionID << std::endl;
-		std::cout<<i<<": Symbol Rate Idx: " << actionListIdxs(0,actionID) << std::endl;
-		std::cout<<i<<": TX Power Idx: " << actionListIdxs(1,actionID) << std::endl;
-		std::cout<<i<<": ModCod Idx: " << actionListIdxs(2,actionID) << std::endl;
-		std::cout<<i<<": Roll Off Idx: " << actionListIdxs(3,actionID) << std::endl;
-		std::cout<<i<< ": ModCod: " << cogEngParams.nnAppSpec_modCodList(actionListIdxs(2,actionID)) << std::endl;		
+		std::cout<<i<<": Action ID Chosen: " << actionID << std::endl;
+		std::cout<<i<<": Symbol Rate: " << actionList(0,actionID)  << " Symbols/Sec" << std::endl;
+		std::cout<<i<<": Relative TX Power: " << actionList(1,actionID) << " dB" << std::endl;
+		std::cout<<i<<": Filter Roll Off: " << actionList(3,actionID) << std::endl;
+		std::cout<<i<<": Modulation: " << cogEngParams.nnAppSpec_modList(actionListIdxs(2,actionID)) << std::endl;
+		std::cout<<i<<": Code Rate: " << cogEngParams.nnAppSpec_codList(actionListIdxs(2,actionID)) << std::endl;
+		std::cout<<i<< ": ModCod Idx: " << cogEngParams.nnAppSpec_modCodList(actionListIdxs(2,actionID)) << std::endl;		
 
 		
 		#ifdef LOGGING
@@ -394,6 +414,7 @@ int main() {
 		ml605Msg.modcod = cogEngParams.nnAppSpec_modCodList(actionListIdxs(2,actionID));
 		ml605Msg.rolloff = actionListIdxs(3,actionID);
 		ml605Msg.transmitPower = actionListIdxs(1,actionID);
+		//ml605Msg.transmitPower = 15;
 		ml605Msg.enable = 1;
 		ml605.generateTXActionMessage(ml605Msg,ml605Buf);
 		ethTx.updateUDPPayload(ml605Buf);
@@ -445,10 +466,14 @@ int main() {
 		} else {
 			//measurementVec(0) = 6.0+math::Random()-0.5 + cogEngParams.nnAppSpec_transmitPowerList(ml605Msg.transmitPower);
 			double SNR;
-			if(i<6000) {//6000
-				SNR=((double)i)*0.002;
+			if(USE_SNR_PROFILE) {
+				SNR = _snrProfileVec[i];
 			} else {
-				SNR=12.0-0.002*(i-6000);
+				if(i<6000) {//6000
+					SNR=((double)i)*0.002*2;
+				} else {
+					SNR=12.0-0.002*(i-6000)*2;
+				}
 			}
 			double noise = mlpack::math::RandNormal(0,0.01); //std deviation ~0.1 dB
 
@@ -460,8 +485,7 @@ int main() {
 			measurementVec(5) = cogEngParams.nnAppSpec_codList(actionListIdxs(2,actionID)); //cod
 		}
 		//we don't need to measure log2(M) since we have M.
-		std::cout <<i<<": measurementVec: " << std::endl;
-		std::cout << measurementVec << std::endl;
+		std::cout <<i<<": EsN0 measured: " << measurementVec(0) << " dB" << std::endl;
 
 		#ifdef LOGGING
 		logFile << "::Measurement Received:";
@@ -470,6 +494,7 @@ int main() {
 
 		//record response of environment
 		std::cout<<i<<": Recording Response" << std::endl;
+		std::cout<<"---------------------------" << std::endl;
 /*		if(!SIMULATION_FLAG) {
 			actionIDElements[0] = actionListIdxs(0,actionID);
 			actionIDElements[1] = frameMsg.txPower;
@@ -487,7 +512,9 @@ int main() {
 		#ifdef LOGGING
 		logFile << "::End Time: " << boost::posix_time::microsec_clock::local_time() << std::endl;
 		logFile << std::endl;
-		#endif	
+		#endif
+
+		std::cout << std::endl << std::endl;	
 	}
 	rssiServer.close();
 	frameServer.close();

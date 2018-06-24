@@ -7,7 +7,7 @@
 
 #include <mlpack/methods/ann/layer/linear_layer.hpp>
 #include <mlpack/methods/ann/layer/base_layer.hpp>
-//#include <mlpack/methods/ann/layer/identity_output_layer.hpp>
+#include <mlpack/methods/ann/layer/identity_output_layer.hpp>
 
 #include <mlpack/methods/ann/ffn.hpp>
 #include <mlpack/methods/ann/performance_functions/mse_function.hpp>
@@ -170,6 +170,7 @@ class RLNNCognitiveEngine {
 		arma::mat _nnExploreInputs;
 		arma::mat _nnExploitInputs;
 		int _histRollBackIdx;
+		int _histRollBackCnt;
 
 		bool _currentlyTraining;
 		std::atomic<bool> _trainingComplete;
@@ -241,6 +242,7 @@ RLNNCognitiveEngine::RLNNCognitiveEngine(const CogEngParams & inpParams)
 	_lastExploitFitObserved = 0.0;
 	_forceExplore = true;
 	_histRollBackIdx = -1;
+	_histRollBackCnt = 0;
 
 	_currentlyTraining = false;
 	_trainingComplete = false;
@@ -443,10 +445,18 @@ void RLNNCognitiveEngine::recordResponse(int actionID, const arma::rowvec &measu
 
 	//compute new fitness observed
 	appSpecObj.getFitnessParams(fitParams);
-	std::cout << "fitParams: " << std::endl;
-	std::cout << fitParams << std::endl;
+	//ONLY HERE FOR DEMO PURPOSES!!!
+	std::cout << "Normalized Objective Scores:" << std::endl;
+	std::cout << "Throughput: " << fitParams(0) << std::endl;
+	std::cout << "BER: " << fitParams(1) << std::endl;
+	std::cout << "Target BW: " << fitParams(2) << std::endl;
+	std::cout << "Spectral Efficiency: " << fitParams(3) << std::endl;
+	std::cout << "TX Power Efficiency: " << fitParams(4) << std::endl;
+	std::cout << "DC Power Consumed: " << fitParams(5) << std::endl;
+	//std::cout << "fitParams" << std::endl;
+	//std::cout << fitParams << std::endl;
 	fitObserved = arma::dot(_fitnessWeights,fitParams);
-	std::cout << "fitObserved: " << fitObserved << std::endl;
+	std::cout << "Multiobjective Fitness Score: " << fitObserved << std::endl;
 
 	#ifdef LOGGING
 //	logFile << boost::posix_time::microsec_clock::local_time() << std::endl;
@@ -485,19 +495,27 @@ void RLNNCognitiveEngine::recordResponse(int actionID, const arma::rowvec &measu
 		if(_exploitFlag) {
 			if(fitObserved<_lastExploitFitObserved) {
 				//Reset "More Efficient Mode". Threshold value is a designer parameter (0.5 for specific missions, 0.1 for general)
-				if(	((_lastExploitFitObserved-fitObserved)>_forceExploreThreshold) &&
-					(appSpecObj.lastAndNewNNExploitInputEqual()) &&
-					(appSpecObj.lastNNExploitInputEmpty()==false)
+				if(  (((_lastExploitFitObserved-fitObserved)>_forceExploreThreshold) &&
+					 (appSpecObj.lastAndNewNNExploitInputEqual()) &&
+					 (appSpecObj.lastNNExploitInputEmpty()==false)) 
+					 ||
+					 (((_histRollBackCnt>=trBuf.getBufferSize()) &&
+					 (appSpecObj.lastAndNewNNExploitInputEqual()) &&
+					 (appSpecObj.lastNNExploitInputEmpty()==false))) 
+
+					&& (!_currentlyTraining)
 				  ) {
 				  	//std::cout <<"HERE1"<<std::endl;
 				  	_forceExplore = 1; //enter explore mode
 				  	_fitObservedMax = 0; //reset max tracking
 				  	trBuf.resetBuffer(); //reset NN history
+				  	_histRollBackCnt = 0;
 				}
 				// Quick "recover mode" using performances from the buffer.  Triggers when 90% below previous exploration level
 				else if (fitObserved < _lastExploitFitObserved*0.9 || /*fitObserved < _fitObservedMax*0.9*/ fitObserved < appSpecObj.getRollBackThreshold()) {
 					//std::cout <<"HERE2"<<std::endl;
 					_histRollBackIdx++; //increment ptr
+					_histRollBackCnt++;
 					if(_histRollBackIdx==(trBuf.getBufCntr()-1)) { //wrap ptr around
 						_histRollBackIdx=0;
 					}
@@ -520,17 +538,20 @@ void RLNNCognitiveEngine::recordResponse(int actionID, const arma::rowvec &measu
 					//std::cout <<"HERE3"<<std::endl;
 					_lastExploitFitObserved = fitObserved;
 					appSpecObj.updateLastNNExploitInputs();
+				  	_histRollBackCnt = 0;
 				}
 				//if exploiting and current exploitation performance is worse than previous exploitation perf;
 				//roll back nn exploit input
 				else {
 					//std::cout <<"HERE4"<<std::endl;
 					appSpecObj.rollBackExploitInputs();
+				  	_histRollBackCnt = 0;
 				}
 			} else { //update last exploitation performance
 				//std::cout <<"HERE5"<<std::endl;
 				_lastExploitFitObserved = fitObserved;
 				appSpecObj.updateLastNNExploitInputs();
+				_histRollBackCnt = 0;
 			}
 		}
 	}

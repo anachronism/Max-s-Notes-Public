@@ -10,7 +10,7 @@
 
 #include <mlpack/methods/ann/layer/linear_layer.hpp>
 #include <mlpack/methods/ann/layer/base_layer.hpp>
-//#include <mlpack/methods/ann/layer/identity_output_layer.hpp>
+#include <mlpack/methods/ann/layer/identity_output_layer.hpp>
 
 #include <mlpack/methods/ann/ffn.hpp>
 #include <mlpack/methods/ann/performance_functions/mse_function.hpp>
