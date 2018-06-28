@@ -51,6 +51,12 @@ function [net,recurseOut,err_out] = trainrlm(net_old,recurseIn,X,Y,Xtest,Ytest)
                 
             end
             
+%             grad = defaultderiv('dperf_dwb',net_tmp, X(:,i),Y(:,i));%defaultderiv('dperf_dwb',net_tmp, X(:,i),Y(:,i));
+%             [new_S, new_P,new_wb] =  rlm_update(grad,rho_tmp, new_P,new_wb,...
+%                                                     time_tmp, recurseIn.alpha,err);
+%             net_tmp = setwb(net_old, new_wb);
+%             time_tmp = time_tmp + 1;
+            
 %             net_tmp = setwb(net_old,new_wb);
             %%%%
             

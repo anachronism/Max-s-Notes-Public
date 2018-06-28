@@ -100,15 +100,15 @@ for iterations=1:1
             
             if cn==1
                 % Fixed - LEO Channel [CLEAR SKY or RAIN]
-                load ('L_fs.mat') %(LEO time series) Clear sky SNR profile at fixed ground receiver
-                TOTAL=(L_fs-max(L_fs))*-1;
+                % load ('L_fs.mat') %(LEO time series) Clear sky SNR profile at fixed ground receiver
+                % TOTAL=(L_fs-max(L_fs))*-1;
                 
                 
-%                 load('esno_curves.mat');
+                 load('esno_curves.mat');
 %                 % 5 doesn't work, size = 75..
-%                 tmpTotal =time_series(2).esno_viasat; %%% TODO: verify this is what should be done 
+                 tmpTotal =time_series(4).esno_viasat; %%% TODO: verify this is what should be done 
 %                 %%% TODO: Incorporate logic to deal with bad connections.
-%                 TOTAL = (tmpTotal - max(tmpTotal))* -1;
+                 TOTAL = (tmpTotal - max(tmpTotal))* -1;
             else
                 % Fixed - GEO Channel [CLEAR SKY or RAIN]
                 TOTAL=6*ones(1,episode_dur); %GEO clear sky SNR profile >>> 1000 seconds of constant 9 dB SNR profile
@@ -668,7 +668,8 @@ for iterations=1:1
                     %%%
                     %Training NN1
                     tic
-                    parfor n_i=1:numNN
+                    %par
+                    for n_i=1:numNN
                         [NN{n_i},trainRecord{n_i}]=train(net,x1,y1);
                     end
                     elapsedTime = toc;

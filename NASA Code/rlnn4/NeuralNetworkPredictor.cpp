@@ -181,10 +181,10 @@ void NeuralNetworkPredictor<NetType,OptType>::train(const arma::mat &trainData, 
 			}
 		}
 
-		
+		/***************THIS IS WHERE I SHOULD CHANGE THINGS -- MAX*********************/
 		//init weights to same init values each time and train using LM
 		nnFFNVec[i]->importWeights(_initWeights);
-		nnFFNVec[i]->runLM(shuffledTrainData,shuffledTrainLabels,shuffledValData,shuffledValLabels,0.0,1e-12,1e10,500,20);
+		nnFFNVec[i]->runLM(shuffledTrainData,shuffledTrainLabels,shuffledValData,shuffledValLabels,0.0,1e-12,1e10,500,20); /// runRLM, runLearnMSE.
 		
 
 		//update weights in MLPack NN
