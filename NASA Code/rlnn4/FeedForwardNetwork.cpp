@@ -598,6 +598,130 @@ void FeedForwardNetwork::runLM(const arma::mat &inpPatternTrain,
 	updateNetworkWithWeights(network_,trainedWeights_);
 }
 
+void FeedForwardNetwork::runRLM(const arma::mat &inpPatternTrain,
+								const arma::mat &outPatternTrain,
+								const arma::mat &inpPatternValid,
+								const arma::mat &outPatternValid,
+								double minError,
+								double minGrad,
+								double maxMu,
+								int maxIterations,
+								int maxValidationFails
+				  			 )
+{
+	int m;
+	int loopIter;
+	arma::mat jMat;
+	arma::colvec errorVecForEval;
+	arma::colvec errorVecForJe;
+	arma::colvec allCurrentWeights;
+	arma::colvec allNewWeights;
+	double mu;
+	double lastError = arma::datum::inf;
+	double newError;
+	bool reCalc;
+	bool extremeMuReached;
+	arma::mat gradTmpMat;
+	double grad = arma::datum::inf;
+	double newErrorVal;
+	double lastErrorVal = arma::datum::inf;
+	double bestErrorVal = arma::datum::inf;
+	int valFailIter;
+
+	//calculate jacobian
+	loopIter=0;
+	mu=.001;
+	valFailIter=0;
+	while(((lastError-minError)>1e-12) && 
+		   (loopIter < maxIterations) &&
+		   //((lastError-newError)>1e-12) &&
+		   ((grad-minGrad)>1e-12) &&
+		   (mu <= maxMu) &&
+		   (valFailIter != maxValidationFails)
+		 )
+	{
+		m = 0;
+		//calculate jacobian
+		//std::cout << "pre-jacobian"  << std::endl;
+		calculateJacobianMatrix(network_,jMat,errorVecForJe,allCurrentWeights,inpPatternTrain,outPatternTrain);
+		//std::cout << "post-jacobian" << std::endl;
+		errorVecForEval = errorVecForJe;
+		lastError = computeMeanSquareError(errorVecForEval,jMat.n_rows,1);
+
+		do {
+			//update weights, evaluate, compare with current weight's performance
+			//std::cout << "calc weights" << std::endl;
+			calculateWeightUpdate(network_,jMat,allCurrentWeights,errorVecForJe,mu,allNewWeights);
+			//std::cout << "update weights" << std::endl;
+			//std::cout << "new weights: " << allNewWeights << std::endl;
+			updateNetworkWithWeights(network_,allNewWeights);
+			
+			//std::cout << "test nn" << std::endl;
+			testNN(network_,inpPatternTrain,outPatternTrain,errorVecForEval);
+			//std::cout << "errorVec: " << errorVecForEval << std::endl;
+			newError = computeMeanSquareError(errorVecForEval,jMat.n_rows,1);
+
+			//std::cout << loopIter << ":" << lastError << " " << newError << " " << (bool) (newError>lastError) << " " << mu << std::endl;
+
+			if((newError-lastError)>1e-12 /*|| m>0*/) {
+				//revert weights
+				updateNetworkWithWeights(network_,allCurrentWeights);
+				
+				//need to use more grad descent
+				mu = mu*10.0;
+				if(mu>1e11) {
+					mu=1e11;
+				}
+
+			} else {
+				//can use more of newton's method
+				mu = mu/10.0;
+				if(mu<1e-300) {
+					mu=1e-300;
+				}
+			}
+			m=m+1;
+		}
+		while(((newError-lastError)>1e-12)) ;
+
+		//Calculate Grad for Iteration
+		calculateJacobianMatrix(network_,jMat,errorVecForJe,allNewWeights,inpPatternTrain,outPatternTrain);
+		//grad = 2*sqrt(1/(M*P)*Je.^2)
+		gradTmpMat = 2*arma::sqrt(arma::trans(((double)(1.0/jMat.n_rows))*arma::trans(jMat)*errorVecForJe)*
+				(((double)(1.0/jMat.n_rows))*arma::trans(jMat)*errorVecForJe));
+		grad = gradTmpMat(0,0);
+
+		//Calculate Validation Fail for Iteration and save best performance
+		testNN(network_,inpPatternValid,outPatternValid,errorVecForEval);
+		newErrorVal = computeMeanSquareError(errorVecForEval,outPatternValid.n_rows,outPatternValid.n_cols);
+		/*if(newErrorVal < lastErrorVal) {
+			valFailIter = 0;
+		} else { //validation fail
+			valFailIter++;
+		}
+		lastErrorVal = newErrorVal;
+		//Save "best performing" weights and save them
+		if(newErrorVal < bestErrorVal) {
+			trainedWeights_ = allNewWeights;
+			bestErrorVal = newErrorVal;
+		}*/
+		if(newErrorVal < bestErrorVal) {
+			valFailIter = 0; //reset val iterator
+			trainedWeights_ = allNewWeights; //save best weights
+			bestErrorVal = newErrorVal;
+		} else { //validation fail
+			valFailIter++;
+		}
+
+		//print progress
+		//std::cout << loopIter << ":" << "grad: " << grad << ", perf: " << newError << ", valStops: " << valFailIter << std::endl;
+
+		loopIter++;
+	}
+
+	updateNetworkWithWeights(network_,trainedWeights_);
+}
+
 void FeedForwardNetwork::exportWeights(arma::colvec &weights) {
 	int nWeights;
 
@@ -715,92 +839,3 @@ void FeedForwardNetwork::printWeights(const arma::colvec &weights) {
 	std::cout<< weights << std::endl;
 	std::cout<<std::endl;	
 }
-
-
-/*int main() {
-	//network params
-	const int N_INPUTS = 2;
-	const int N_LAYERS = 3;
-	const std::vector<int> NEURONS_PER_LAYER = {3,3,1};
-	const std::vector<std::string> ACTIVATION_TYPE_PER_LAYER = {"logsig","logsig","linear"};
-
-	//initialize network
-	FeedForwardNetwork ffn;
-	ffn.initNetwork(N_INPUTS,N_LAYERS,NEURONS_PER_LAYER,ACTIVATION_TYPE_PER_LAYER);
-	arma::colvec init_weights = {2,1,1,2,2,2,1,1,1,2,2,2,3,3,3,1,2,4};
-	ffn.importWeights(init_weights);
-	std::cout << init_weights << std::endl;
-
-	/*ffn.printWeights();
-
-	//create input,output vectors
-	arma::colvec inputs = {0.0,1.0};
-	arma::colvec outputs;
-
-	arma::mat inpPattern = {{0,1,0,1},
-							{0,0,1,1}
-						   };
-	arma::mat outPattern = { 0,1,1,0};
-	double maxError = 1e-4;
-	double maxIterations = 1;
-	arma::colvec fwdPropOutput;
-
-	ffn.forwardPropagate(inputs, outputs);
-	std::cout << outputs << std::endl;
-
-	ffn.runLM(inpPattern,outPattern,maxError,maxIterations);
-	for(int i=0; i<inpPattern.n_cols; i++) {
-		std::cout << "Input:" << std::endl;
-		std::cout << inpPattern.col(i) << std::endl;
-		ffn.forwardPropagate(inpPattern.col(i),fwdPropOutput);
-		std::cout << "Output:" << std::endl;
-		std::cout << fwdPropOutput << std::endl;
-	}
-
-	ffn.printWeights();
-
-}*/
-/*
-int main() {
-	//network params
-	const int N_INPUTS = 2;
-	const int N_LAYERS = 3;
-	const std::vector<int> NEURONS_PER_LAYER = {3,3,1};
-	const std::vector<std::string> ACTIVATION_TYPE_PER_LAYER = {"logsig","logsig","linear"};
-
-	//initialize network
-	FeedForwardNetwork ffn;
-	ffn.initNetwork(N_INPUTS,N_LAYERS,NEURONS_PER_LAYER,ACTIVATION_TYPE_PER_LAYER);
-	ffn.printWeights();
-
-	//create input,output vectors
-	arma::colvec inputs = {0.0};
-	arma::colvec outputs;
-
-	arma::mat inpPattern = {{0,0,1,1},{0,1,0,1}};
-	arma::mat outPattern = { 0,1,1,0 };
-	arma::mat inpPatternValid = {{0.01,0.01,0.99,0.99},{0.01,0.99,0.01,0.99}};
-	arma::mat outPatternValid = { 0.01,0.99,0.99,0.01 };
-	double maxError = 0;
-	int maxIterations = 100;
-	int maxValidationFails = 6;
-	double maxGrad = 1e-12;
-	double maxMu = 1e10;
-	arma::colvec fwdPropOutput;
-
-	ffn.forwardPropagate(inputs, outputs);
-	std::cout << "outputs: " << outputs << std::endl;
-
-	ffn.runLM(inpPattern,outPattern,inpPatternValid,outPatternValid,maxError,maxGrad,maxMu,maxIterations,maxValidationFails);
-	for(int i=0; i<inpPattern.n_cols; i++) {
-		std::cout << "Input:" << std::endl;
-		std::cout << inpPattern.col(i) << std::endl;
-		ffn.forwardPropagate(inpPattern.col(i),fwdPropOutput);
-		std::cout << "Output:" << std::endl;
-		std::cout << fwdPropOutput << std::endl;
-	}
-
-	ffn.printWeights();
-
-}
-*/
