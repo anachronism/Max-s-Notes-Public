@@ -19,7 +19,18 @@ public:
 				int maxValidationFails
 			);
 
-
+	void runRLM(arma::mat &sMat,
+				arma::mat &pMat,
+				const arma::mat &inpPatternTrain,
+				const arma::mat &outPatternTrain,
+				const arma::mat &inpPatternValid,
+				const arma::mat &outPatternValid,
+				double minError,
+				double minGrad,
+				double maxMu,
+				int maxIterations,
+				int maxValidationFails
+			);
 	void forwardPropagate(const arma::colvec &inputs,
 						  arma::colvec &outputs
 						 );
@@ -68,6 +79,13 @@ private:
 								const arma::colvec &weights
 							 );
 	double computeMeanSquareError(const arma::colvec &errorVec, int nOutputs, int nPatterns);
+	void calculateRecursiveWeights(const std::vector<std::vector<Neuron>> &network,
+						   const arma::mat &pMat,
+						   const arma::colvec &allCurrentWeights,
+						   const arma::colvec &errorVec,
+						   double mu,
+						   arma::colvec &allNewWeights
+						  );
 	void calculateWeightUpdate(const std::vector<std::vector<Neuron>> &network,
 							   const arma::mat &jMat,
 							   const arma::colvec &allCurrentWeights,
@@ -81,6 +99,15 @@ private:
 							arma::colvec &allCurrentWeights,
 							const arma::mat &inpPattern,
 							const arma::mat &outPattern
+							);
+	void recursiveUpdate(std::vector<std::vector<Neuron>> &network,
+							arma::mat &sMat,
+							arma::mat &pMat,
+							double mu,
+							arma::colvec &errorVec,
+							arma::colvec &allCurrentWeights,
+							const arma::mat &inpPattern,
+							const arma::mat outPatternTrain
 							);
 	void backwardPropagate(std::vector<std::vector<Neuron>> &network,
 							const arma::colvec &actualoutputVec,
@@ -348,6 +375,55 @@ void FeedForwardNetwork::backwardPropagate(std::vector<std::vector<Neuron>> &net
 	}
 }
 
+void FeedForwardNetwork::recursiveUpdate(std::vector<std::vector<Neuron>> &network,
+							arma::mat &sMat,
+							arma::mat &pMat,
+							double mu,
+							arma::colvec &errorVec,
+							arma::colvec &allCurrentWeights,
+							const arma::mat &inpPattern,
+							const arma::mat outPatternTrain
+							)
+{
+
+	arma::colvec fwPropOutput;
+	arma::colvec onePatternErrorVec;
+	const int nOutputs = network[network.size()-1].size();
+	arma::mat Omega;
+	arma::colvec omegaRow;
+	float ALPHA = 0.98;
+	//////////////////////////? VERIFY THAT THIS IS NEEDED
+	//resize jacobian matrix
+	int jMatCols=0;
+	for(int i=0; i<network.size(); i++) {
+		if(i==0) {
+			jMatCols = jMatCols + network[i].size()*network[i][0].inputs.size();
+		} else {
+			jMatCols = jMatCols + network[i-1].size()*network[i].size();
+		}
+	}
+	
+	int jMatRows=nOutputs*inpPattern.n_cols;
+	//jMat.set_size(jMatRows,jMatCols);
+	//resize error vector
+	//errorVec.set_size(jMatRows);
+	//resize current weight vector
+	//allCurrentWeights.set_size(jMatCols);
+	///////////////////////////////////////
+	int timeCount = 1; /////// CHANGE THIS
+	omegaRow.zeros();
+	omegaRow(timeCount % jMatRows) = 1;
+
+	Omega = arma::join_rows(errorVec, omegaRow);
+	arma::mat lambdaMat = arma::mat(2,2,arma::fill::eye);
+	
+	lambdaMat(1,1) = 1/mu;
+	sMat = ALPHA * lambdaMat + Omega.t() * pMat * Omega;
+	pMat = 1/ALPHA * (pMat - pMat * Omega * arma::pinv(sMat) * Omega.t() * pMat);
+
+
+}
+
 void FeedForwardNetwork::calculateJacobianMatrix(std::vector<std::vector<Neuron>> &network,
 							arma::mat &jMat,
 							arma::colvec &errorVec,
@@ -369,6 +445,7 @@ void FeedForwardNetwork::calculateJacobianMatrix(std::vector<std::vector<Neuron>
 			jMatCols = jMatCols + network[i-1].size()*network[i].size();
 		}
 	}
+
 	int jMatRows=nOutputs*inpPattern.n_cols;
 	jMat.set_size(jMatRows,jMatCols);
 	//resize error vector
@@ -412,6 +489,26 @@ void FeedForwardNetwork::calculateJacobianMatrix(std::vector<std::vector<Neuron>
 
 }
 
+void FeedForwardNetwork::calculateRecursiveWeights(const std::vector<std::vector<Neuron>> &network,
+						   const arma::mat &pMat,
+						   const arma::colvec &allCurrentWeights,
+						   const arma::colvec &errorVec,
+						   double mu,
+						   arma::colvec &allNewWeights
+						  )
+{
+	allNewWeights.set_size(allCurrentWeights.n_elem);
+	//arma::mat IdMat;
+	//IdMat.eye(jMat.n_cols,jMat.n_cols);
+	//std::cout <<"here"<<std::endl;
+	//std::cout << jMat << std::endl;
+	arma::colvec grad; ///////ACTUALLY GET GRADIENT
+	grad.zeros();
+	allNewWeights = allCurrentWeights + pMat * grad * errorVec;
+	//std::cout <<"J'J : " << std::endl << ((double)(1.0/jMat.n_rows))*arma::trans(jMat)*jMat << std::endl;
+	//std::cout <<"Je : " << std::endl << ((double)(1.0/jMat.n_rows))*arma::trans(jMat)*errorVec;
+}
+
 void FeedForwardNetwork::calculateWeightUpdate(const std::vector<std::vector<Neuron>> &network,
 						   const arma::mat &jMat,
 						   const arma::colvec &allCurrentWeights,
@@ -425,7 +522,7 @@ void FeedForwardNetwork::calculateWeightUpdate(const std::vector<std::vector<Neu
 	IdMat.eye(jMat.n_cols,jMat.n_cols);
 	//std::cout <<"here"<<std::endl;
 	//std::cout << jMat << std::endl;
-	allNewWeights = allCurrentWeights - arma::inv(((double)(1.0/jMat.n_rows))*arma::trans(jMat)*jMat + mu*IdMat)*(((double)(1.0/jMat.n_rows))*arma::trans(jMat)*errorVec);
+	allNewWeights = allCurrentWeights - arma::pinv(((double)(1.0/jMat.n_rows))*arma::trans(jMat)*jMat + mu*IdMat)*(((double)(1.0/jMat.n_rows))*arma::trans(jMat)*errorVec);
 	//std::cout <<"J'J : " << std::endl << ((double)(1.0/jMat.n_rows))*arma::trans(jMat)*jMat << std::endl;
 	//std::cout <<"Je : " << std::endl << ((double)(1.0/jMat.n_rows))*arma::trans(jMat)*errorVec;
 }
@@ -598,10 +695,13 @@ void FeedForwardNetwork::runLM(const arma::mat &inpPatternTrain,
 	updateNetworkWithWeights(network_,trainedWeights_);
 }
 
-void FeedForwardNetwork::runRLM(const arma::mat &inpPatternTrain,
+void FeedForwardNetwork::runRLM(arma::mat &sMat,
+								arma::mat &pMat,
+								const arma::mat &inpPatternTrain,
 								const arma::mat &outPatternTrain,
 								const arma::mat &inpPatternValid,
 								const arma::mat &outPatternValid,
+
 								double minError,
 								double minGrad,
 								double maxMu,
@@ -643,15 +743,22 @@ void FeedForwardNetwork::runRLM(const arma::mat &inpPatternTrain,
 		m = 0;
 		//calculate jacobian
 		//std::cout << "pre-jacobian"  << std::endl;
-		calculateJacobianMatrix(network_,jMat,errorVecForJe,allCurrentWeights,inpPatternTrain,outPatternTrain);
+		
+		//calculateJacobianMatrix(network_,jMat,errorVecForJe,allCurrentWeights,inpPatternTrain,outPatternTrain);
+		recursiveUpdate(network_,sMat,pMat,mu,errorVecForJe,allCurrentWeights,inpPatternTrain,outPatternTrain); //* GOTTA DO THIS TO UPDATE ALL SAMPLES*//
 		//std::cout << "post-jacobian" << std::endl;
+		// calculateSMatrix(network_,pMat,sMat,errorVecForEval,allCurrentWeights,outPatternTrain);
+		// calculatePMatrix(network_,pMat,sMat,errorVecForEval,allCurrentWeights,outPatternTrain);
+
 		errorVecForEval = errorVecForJe;
 		lastError = computeMeanSquareError(errorVecForEval,jMat.n_rows,1);
 
 		do {
 			//update weights, evaluate, compare with current weight's performance
 			//std::cout << "calc weights" << std::endl;
-			calculateWeightUpdate(network_,jMat,allCurrentWeights,errorVecForJe,mu,allNewWeights);
+			calculateRecursiveWeights(network_,pMat,allCurrentWeights,errorVecForJe,mu,allNewWeights);
+			//calculateWeightUpdate(network_,jMat,allCurrentWeights,errorVecForJe,mu,allNewWeights);
+			
 			//std::cout << "update weights" << std::endl;
 			//std::cout << "new weights: " << allNewWeights << std::endl;
 			updateNetworkWithWeights(network_,allNewWeights);
@@ -685,11 +792,13 @@ void FeedForwardNetwork::runRLM(const arma::mat &inpPatternTrain,
 		while(((newError-lastError)>1e-12)) ;
 
 		//Calculate Grad for Iteration
-		calculateJacobianMatrix(network_,jMat,errorVecForJe,allNewWeights,inpPatternTrain,outPatternTrain);
+		//* GET GRAD HERE THE NORMAL WAY*//
+
+		//calculateJacobianMatrix(network_,jMat,errorVecForJe,allNewWeights,inpPatternTrain,outPatternTrain);
 		//grad = 2*sqrt(1/(M*P)*Je.^2)
-		gradTmpMat = 2*arma::sqrt(arma::trans(((double)(1.0/jMat.n_rows))*arma::trans(jMat)*errorVecForJe)*
-				(((double)(1.0/jMat.n_rows))*arma::trans(jMat)*errorVecForJe));
-		grad = gradTmpMat(0,0);
+		//gradTmpMat = 2*arma::sqrt(arma::trans(((double)(1.0/jMat.n_rows))*arma::trans(jMat)*errorVecForJe)*
+		//		(((double)(1.0/jMat.n_rows))*arma::trans(jMat)*errorVecForJe));
+		//grad = gradTmpMat(0,0);
 
 		//Calculate Validation Fail for Iteration and save best performance
 		testNN(network_,inpPatternValid,outPatternValid,errorVecForEval);

@@ -15,6 +15,10 @@
 
 #include <iostream>
 
+#define LM false
+#define RLM false
+#define NSE true
+
 using namespace mlpack;
 
 int findIdxInActionList(const std::vector<int> &idxs, arma::Mat<int> & actionListIdxs) {
@@ -508,6 +512,7 @@ int main() {
 		}
 		actionID = findIdxInActionList(actionIDElements,actionListIdxs);
 */
+
 		rlnnCogEng.recordResponse(actionID, measurementVec);
 		#ifdef LOGGING
 		logFile << "::End Time: " << boost::posix_time::microsec_clock::local_time() << std::endl;
@@ -516,11 +521,17 @@ int main() {
 
 		std::cout << std::endl << std::endl;	
 	}
+	std::cout << "end" <<std::endl;
 	rssiServer.close();
+	std::cout<<"end 2" <<std::endl;
 	frameServer.close();
+	std::cout<<"end 3" <<std::endl;
 	tRSSI.join();
+	std::cout<<"end 4" <<std::endl;
 	tFrames.join();
+	std::cout<<"end 5" <<std::endl;
 	tTimer.join();
+	std::cout<<"end 6" <<std::endl;
 
 	logFile.close();
 	if(saveToFile) {
