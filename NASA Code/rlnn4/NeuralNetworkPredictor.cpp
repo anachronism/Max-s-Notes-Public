@@ -184,8 +184,9 @@ void NeuralNetworkPredictor<NetType,OptType>::train(const arma::mat &trainData, 
 		
 		//init weights to same init values each time and train using LM
 		nnFFNVec[i]->importWeights(_initWeights);
+		/***********************This is the function that will be changed.***************************/
 		nnFFNVec[i]->runLM(shuffledTrainData,shuffledTrainLabels,shuffledValData,shuffledValLabels,0.0,1e-12,1e10,500,20);
-		
+		// nnFFNVec[i]->runRLM(shuffledTrainData,shuffledTrainLabels,shuffledValData,shuffledValLabels,0.0,1e-12,1e10,500,20);
 
 		//update weights in MLPack NN
 		arma::colvec weightsCol;
