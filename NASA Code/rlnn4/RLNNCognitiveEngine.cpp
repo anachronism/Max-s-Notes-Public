@@ -649,7 +649,7 @@ void RLNNCognitiveEngine::recordResponse(int actionID, const arma::rowvec &measu
 				logFile << "::Training: Yes" <<std::endl;
 				#endif
 			}
-		} else {
+		} else { /*************CHECK IF THIS IS EVER VISITED****************/
 			std::cout << "Training Occurring" << std::endl;
 			#ifdef LOGGING
 			logFile << "::Training: Yes" <<std::endl;

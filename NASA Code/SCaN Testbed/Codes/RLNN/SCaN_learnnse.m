@@ -274,7 +274,7 @@ for iterations=1
             input_explore_2 = mapminmax('apply',U',ps); %Applying normalization function ps to new training input
             
             %Percentage to exclude from training buffer for next retraining
-            nn_delete=1;%1/4; %after training, delete 50% of oldest actions and retrain only after these percentage of training data is replaced by new training data
+            nn_delete=1/4;%1;%1/4;%1;%1/4; %after training, delete 50% of oldest actions and retrain only after these percentage of training data is replaced by new training data
             
             %%%history_size=200; % <<<<< NN training window with UNIQUE actions (and its respective performance) >>> designer parameter ANALYZE IMPACT ON PERFORMANCE!!!!!
               history_size = 200;

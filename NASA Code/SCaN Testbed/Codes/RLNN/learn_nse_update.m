@@ -5,15 +5,14 @@ numClassifiers = 20;%
  % has the 
   if net.initialized == false, net.beta = []; end
   
-  
-  mt = size(data_train,1); % number of training examples
+  mt = size(data_train,2); % number of training examples
   Dt = ones(mt,1)/mt;         % initialize instance weight distribution
   Dt_sampBySamp = Dt;
   if net.initialized==1
     % STEP 1: Compute error of the existing ensemble on new data
     predictions = regress_ensemble(net, data_train, labels_train); %%% CONVERT TO REGRESSION.
     
-    Et_sampBySamp = mse_reg(predictions,labels_train)/mt;
+    Et_sampBySamp = mse_reg(predictions.',labels_train)/mt;
     Et = sum(Et_sampBySamp); %%% THIS IS TO BE UPDATED TO FIT FOR REG.
     %%% get a beta for each net.
     Bt = Et/(1-Et);           % this is suggested in Metin's IEEE Paper
@@ -31,12 +30,12 @@ numClassifiers = 20;%
   
   % STEP 3: New classifier
   if size(net.classifiers,2) < numClassifiers
-      net.classifiers{end + 1} = classifier_train(...
+      net.classifiers{end + 1} = train(...
         net.base_classifier, ...
         data_train, ...
         labels_train);
   else %%% TODO: Proper pruning instead of oldest-out
-      net.classifiers{mod(size(net.classifiers,2),20) + 1} = classifier_train(...
+      net.classifiers{mod(size(net.classifiers,2),20) + 1} = train(...
         net.base_classifier, ...
         data_train, ...
         labels_train);
@@ -48,12 +47,12 @@ numClassifiers = 20;%
  %   y = regress_ensemble(net, data_train, labels_train);%, t);
   for k = 1:min(net.t,numClassifiers) %%% DOESNT WORK WITH CYCLICAL.
 %     epsilon_tk  = sum(Dt.*mse_reg(y(:,k),labels_train)/mt^2); %%% CONVERT TO REGRESSION ERROR. CHECK TO SEE IF WEIGHT IS OK.
-    epsilon_tk = sum(Dt_sampBySamp.*mse_reg(y(:,k),labels_train)/mt);
+    epsilon_tk = sum(Dt_sampBySamp.*mse_reg(y(:,k),labels_train.')/mt);
     if (k<net.t)&&(epsilon_tk>0.5) 
       epsilon_tk = 0.5;
     elseif (k==net.t)&&(epsilon_tk>0.5)
       % try generate a new classifier 
-      net.classifiers{k} = classifier_train(...
+      net.classifiers{k} = train(...
         net.base_classifier, ...  
         data_train, ...
         labels_train);

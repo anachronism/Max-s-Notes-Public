@@ -181,7 +181,7 @@ void NeuralNetworkPredictor<NetType,OptType>::train(const arma::mat &trainData, 
 			}
 		}
 
-		
+		/***************THIS IS WHERE I SHOULD CHANGE THINGS -- MAX*********************/
 		//init weights to same init values each time and train using LM
 		nnFFNVec[i]->importWeights(_initWeights);
 		/***********************This is the function that will be changed.***************************/
