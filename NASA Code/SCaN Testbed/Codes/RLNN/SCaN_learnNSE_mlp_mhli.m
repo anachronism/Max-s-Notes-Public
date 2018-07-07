@@ -108,8 +108,8 @@ for iterations=1
             netTrain_exploit.layers{1}.size = 20;
             netTrain_exploit.layers{1}.transferFcn = 'logsig';
             netTrain_exploit.layers{2}.size = 1;
-            %netTrain_exploit.layers{2}.transferFcn = 'purelin';
-            netTrain_exploit.layers{2}.transferFcn = 'logsig';
+            netTrain_exploit.layers{2}.transferFcn = 'purelin';
+%             netTrain_exploit.layers{2}.transferFcn = 'logsig';
             %Early stop conditions
             netTrain_exploit.trainParam.max_fail=20;
             netTrain_exploit.trainParam.min_grad=1e-12;
