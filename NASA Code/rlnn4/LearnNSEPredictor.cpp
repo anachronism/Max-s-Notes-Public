@@ -310,7 +310,7 @@ void LearnNSEPredictor<NetType,OptType>::train(const arma::mat &trainData, const
 	float tmpFloat;
 
 	for( i = 0; i < indMax; i++){
-		epsilon_tk = arma::accu(Dt_sampBySamp % squaredError(prediction_eval,shuffledTrainLabels)/mt;
+		epsilon_tk = arma::accu(Dt_sampBySamp % squaredError(prediction_eval,shuffledTrainLabels))/mt;
 		tmpFloat = arma::accu(squaredError(prediction_eval,shuffledTrainLabels))/mt;
 		#ifdef LOGGING 
 		logFile <<"Search for this: " <<epsilon_tk<<" tmpfloat: "<<tmpFloat << std::endl;
