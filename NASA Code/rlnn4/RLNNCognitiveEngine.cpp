@@ -17,6 +17,7 @@
 #include <mlpack/core/optimizers/sgd/sgd.hpp>
 
 #include "/home/max/Documents/Max-s-Notes/NASA Code/rlnn4/NeuralNetworkPredictor.cpp"
+#include "/home/max/Documents/Max-s-Notes/NASA Code/rlnn4/LearnNSEPredictor.cpp"
 #include "/home/max/Documents/Max-s-Notes/NASA Code/rlnn4/TrainingDataBuffer.cpp"
 #include "/home/max/Documents/Max-s-Notes/NASA Code/rlnn4/Logging.hpp"
 #include "/home/max/Documents/Max-s-Notes/NASA Code/rlnn4/ApplicationSpecificHelper.cpp"
@@ -83,6 +84,10 @@ struct CogEngParams {
 	arma::Row<double> nnAppSpec_symbolRateList;
 	arma::Row<double> nnAppSpec_transmitPowerList;
 	arma::Row<int> nnAppSpec_modCodList;
+	//Learn NSE parameters
+	double sigmoidSlope;
+	double sigmoidThresh;
+	double errorThresh;
 
 	//TrainingDataBuffer Params
 	int buf_nTrainTestSamples;
@@ -98,11 +103,15 @@ class access;
 class RLNNCognitiveEngine {
 	friend std::ostream & operator<<(std::ostream &os, const RLNNCognitiveEngine &rlnnCogEng);
 	public:
-		NeuralNetworkPredictor<ThreeLayerNetwork,optimization::RMSprop> nnExplore;
-		NeuralNetworkPredictor<ThreeLayerNetwork,optimization::RMSprop> nnExploreTrainer;
+		// NeuralNetworkPredictor<ThreeLayerNetwork,optimization::RMSprop> nnExplore;
+		// NeuralNetworkPredictor<ThreeLayerNetwork,optimization::RMSprop> nnExploreTrainer;
+		LearnNSEPredictor<ThreeLayerNetwork,optimization::RMSprop> nnExplore;
+		LearnNSEPredictor<ThreeLayerNetwork,optimization::RMSprop> nnExploreTrainer;
 
-		std::vector<NeuralNetworkPredictor<TwoLayerNetwork,optimization::RMSprop> *> nnExploit;
-		std::vector<NeuralNetworkPredictor<TwoLayerNetwork,optimization::RMSprop> *> nnExploitTrainer;
+		// std::vector<NeuralNetworkPredictor<TwoLayerNetwork,optimization::RMSprop> *> nnExploit;
+		// std::vector<NeuralNetworkPredictor<TwoLayerNetwork,optimization::RMSprop> *> nnExploitTrainer;
+		std::vector<LearnNSEPredictor<TwoLayerNetwork,optimization::RMSprop> *> nnExploit;
+		std::vector<LearnNSEPredictor<TwoLayerNetwork,optimization::RMSprop> *> nnExploitTrainer;
 
 		TrainingDataBuffer trBuf;
 		ApplicationSpecificHelper appSpecObj;
@@ -206,8 +215,8 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(RLNNCognitiveEngine)
 }*/
 
 RLNNCognitiveEngine::RLNNCognitiveEngine(const CogEngParams & inpParams)
-: 	nnExplore(inpParams.nnExplore_nNets,inpParams.nnExplore_inputVectorSize,inpParams.nnExplore_hiddenLayerSizes,inpParams.nnExplore_outputVectorSize),
-	nnExploreTrainer(inpParams.nnExplore_nNets,inpParams.nnExplore_inputVectorSize,inpParams.nnExplore_hiddenLayerSizes,inpParams.nnExplore_outputVectorSize),
+: 	nnExplore(inpParams.nnExplore_nNets,inpParams.nnExplore_inputVectorSize,inpParams.nnExplore_hiddenLayerSizes,inpParams.nnExplore_outputVectorSize,inpParams.sigmoidSlope,inpParams.sigmoidThresh,inpParams.errorThresh),
+	nnExploreTrainer(inpParams.nnExplore_nNets,inpParams.nnExplore_inputVectorSize,inpParams.nnExplore_hiddenLayerSizes,inpParams.nnExplore_outputVectorSize,inpParams.sigmoidSlope,inpParams.sigmoidThresh,inpParams.errorThresh),
   	trBuf(inpParams.nnAppSpec_nOutVecFeatures,inpParams.buf_nTrainTestSamples,2), //2 NNs (explore and exploit)
   	appSpecObj(	inpParams.buf_actionList,
   				inpParams.nnAppSpec_frameSize,
@@ -265,12 +274,15 @@ RLNNCognitiveEngine::RLNNCognitiveEngine(const CogEngParams & inpParams)
 							 );
 	//generate array of NNs for nnExploit (one for each type of action)
 	for(int i=0; i<_actionList.n_rows; i++) {
-		NeuralNetworkPredictor<TwoLayerNetwork,optimization::RMSprop> * pNNExploit =
-			new NeuralNetworkPredictor<TwoLayerNetwork,optimization::RMSprop>(
+		LearnNSEPredictor<TwoLayerNetwork,optimization::RMSprop> * pNNExploit =
+			new LearnNSEPredictor<TwoLayerNetwork,optimization::RMSprop>(
 				inpParams.nnExploit_nNets,
 				inpParams.nnExploit_inputVectorSize,
 				inpParams.nnExploit_hiddenLayerSizes,
-				inpParams.nnExploit_outputVectorSize
+				inpParams.nnExploit_outputVectorSize,
+				inpParams.sigmoidSlope,
+				inpParams.sigmoidThresh,
+				inpParams.errorThresh
 				);
 		pNNExploit->initializeRMSProp(inpParams.nnExploit_rmsProp_stepSize,
 							 inpParams.nnExploit_rmsProp_alpha,
@@ -281,12 +293,16 @@ RLNNCognitiveEngine::RLNNCognitiveEngine(const CogEngParams & inpParams)
 							 );		
 		nnExploit.push_back(pNNExploit);
 
-		NeuralNetworkPredictor<TwoLayerNetwork,optimization::RMSprop> * pNNExploitTrainer =
-			new NeuralNetworkPredictor<TwoLayerNetwork,optimization::RMSprop>(
+		// NeuralNetworkPredictor<TwoLayerNetwork,optimization::RMSprop> * pNNExploitTrainer =
+		LearnNSEPredictor<TwoLayerNetwork,optimization::RMSprop> * pNNExploitTrainer =
+			new LearnNSEPredictor<TwoLayerNetwork,optimization::RMSprop>(//new NeuralNetworkPredictor<TwoLayerNetwork,optimization::RMSprop>(
 				inpParams.nnExploit_nNets,
 				inpParams.nnExploit_inputVectorSize,
 				inpParams.nnExploit_hiddenLayerSizes,
-				inpParams.nnExploit_outputVectorSize
+				inpParams.nnExploit_outputVectorSize,
+				inpParams.sigmoidSlope,
+				inpParams.sigmoidThresh,
+				inpParams.errorThresh
 				);
 		pNNExploitTrainer->initializeRMSProp(inpParams.nnExploit_rmsProp_stepSize,
 							 inpParams.nnExploit_rmsProp_alpha,
@@ -385,7 +401,7 @@ int RLNNCognitiveEngine::chooseAction() {
 			for(int i=0; i<nnExploit.size(); i++) {
 				nnExploit[i]->predict(_nnExploitInputs, predictions);
 				predictedActionVec.push_back(predictions);
-				//std::cout << predictions << std::endl;
+				std::cout<<"F1: " << predictions << std::endl;
 			}
 			//std::cout << std::endl;
 			//the outputs of the nn's are processed using the application
@@ -404,6 +420,7 @@ int RLNNCognitiveEngine::chooseAction() {
 			#endif
 
 			std::cout << "Exploiting" << std::endl;
+			//std::cout<<"training"<< std::endl;
 			actionID = appSpecObj.returnFallBackAction();
 			_exploitFlag = true;
 		} else {

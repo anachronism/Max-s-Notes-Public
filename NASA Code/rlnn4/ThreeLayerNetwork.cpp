@@ -1,3 +1,6 @@
+#ifndef THREELAYERNETWORK
+#define THREELAYERNETWORK
+
 #include <mlpack/core.hpp>
 
 #include <mlpack/methods/ann/activation_functions/logistic_function.hpp>
@@ -51,3 +54,4 @@ class ThreeLayerNetwork {
 
 	private:
 };
+#endif

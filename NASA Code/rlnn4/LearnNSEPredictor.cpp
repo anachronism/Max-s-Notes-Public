@@ -39,6 +39,10 @@
 
 #include <iostream>
 
+#ifndef LOGGING
+#define LOGGING
+#endif
+
 using namespace mlpack;
 
 namespace boost {
@@ -47,13 +51,24 @@ class access;
 }
 }
 
+void circularShift(arma::colvec vecToShift,arma::colvec& retVec, int shiftNum){
+	
+	for (int i = 0; i < vecToShift.n_elem; i++){
+		retVec[i] = vecToShift((i+shiftNum)%vecToShift.n_elem);
+	}
+}
+
+arma::rowvec squaredError(arma::rowvec vector1, arma::rowvec vector2){
+	arma::rowvec err = vector1 - vector2;
+	return err % err;
+}
+
 template <class NetType, template <class T> class OptType>
 class LearnNSEPredictor {
 	public:
 		std::vector<NetType *> nets;
 
 		void initializeRMSProp(double stepSize, double alpha, double eps, size_t maxIterations, double tolerance, bool shuffle);
-
 		void train(const arma::mat &trainData, const arma::mat &trainLabels, double trainDataFrac);
 		void predict(arma::mat &inputData, arma::mat &prediction);
 		void exportWeights(arma::mat &weights);
@@ -75,14 +90,14 @@ class LearnNSEPredictor {
 		arma::rowvec _mse_perfs;
 		arma::mat _weights;
 		arma::colvec _initWeights;
-		std::vector<double> netWeights;
-		std::vector<double> beta;
+		arma::colvec netWeights;
+		arma::mat beta;
+		int betaInd;
 		double sigmoidSlope,sigmoidThresh,errThresh;
 		bool initialized;
 		long trainingCounter;
-
 		friend class boost::serialization::access;
-
+		
 		template<class Archive>
 		void serialize(Archive & ar, const int version) {
 			ar & _mse_perfs;
@@ -92,6 +107,7 @@ class LearnNSEPredictor {
 
 		std::vector<FeedForwardNetwork *> nnFFNVec;
 };
+
 
 template <class NetType, template <class T> class OptType>
 LearnNSEPredictor<NetType,OptType>::LearnNSEPredictor(int nNets, 
@@ -105,10 +121,12 @@ LearnNSEPredictor<NetType,OptType>::LearnNSEPredictor(int nNets,
 	//Set LearnNSE Parameters.
 	initialized = false;
 	trainingCounter = 0;
+	betaInd = 0;
 	sigmoidThresh = sigmoidThreshTmp;
 	sigmoidSlope = sigmoidSlopeTmp;
 	errThresh = errThreshTmp;
-
+	beta = arma::ones(nNets,nNets);
+	netWeights = arma::ones(nNets); 
 	// Intiialize list of networks.
 	for(int i=0; i<nNets; i++) {
 		NetType * t = new NetType(inputVectorSize,hiddenLayerSize,outputVectorSize);
@@ -172,16 +190,31 @@ void LearnNSEPredictor<NetType,OptType>::initializeRMSProp(double stepSize, doub
 }
 
 template <class NetType, template <class T> class OptType>
-void LearnNSEPredictor<NetType,OptType>::updateNSE(const arma::mat &trainData, const arma::mat &trainLabels, double trainDataFrac){
-	arma::mat prediction,prediction_eval;
+void LearnNSEPredictor<NetType,OptType>::train(const arma::mat &trainData, const arma::mat &trainLabels, double trainDataFrac){
+	arma::mat prediction,prediction_eval,prediction_tmp;
 	arma::mat shuffledTrainData;
 	arma::mat shuffledTrainLabels;
 	arma::mat shuffledValData;
 	arma::mat shuffledValLabels;
-	arma::colvec Dt,Et,Bt,Bt_sampBySamp;
-	double mseInit;
+	arma::colvec Dt,Bt_sampBySamp,Dt_sampBySamp, Wt, Wt_sampBySamp;
+	arma::colvec weightsCol;
+	arma::colvec omega;
+	arma::rowvec betaVec;
+	arma::colvec betaTmp;
+
+	// arma::colvec b;
+	arma::colvec sigSlopeVec,b,mseInit;
+	double Bt, Et;
+	double epsilon_tk,beta_hat;
+	int mt,netInd,indMax,i;
 	int nNets = nets.size();
-	
+	bool firstTrainingBatch;
+
+	if(trainingCounter >= nNets)
+		firstTrainingBatch = false;
+	else 
+		firstTrainingBatch = true;
+
 	//resize shuffle buffers
 	shuffledTrainData.set_size(trainData.n_rows,
 		(int) floor(trainData.n_cols * trainDataFrac));
@@ -194,7 +227,7 @@ void LearnNSEPredictor<NetType,OptType>::updateNSE(const arma::mat &trainData, c
 	//shuffle data and split into train/val sets
 	arma::colvec shuffledOrder = arma::regspace(0,1,trainData.n_cols -1);
 	shuffledOrder = arma::shuffle(shuffledOrder);
-	for(int i=0; i<trainData.n_cols; i++) {
+	for(i=0; i<trainData.n_cols; i++) {
 		if(i < (int) floor(trainData.n_cols * trainDataFrac)) {
 			shuffledTrainData.col(i) = trainData.col(shuffledOrder(i));
 			shuffledTrainLabels.col(i) = trainLabels.col(shuffledOrder(i));
@@ -208,16 +241,19 @@ void LearnNSEPredictor<NetType,OptType>::updateNSE(const arma::mat &trainData, c
 	
 
   //if net.initialized == false, net.beta = []; end
-	mt = shuffledTrainData.n_rows; /***CHECK IF THIS SHOULD BE ROWS OR COLS***/
-	Dt = ones<colvec>(mt)/mt; // Initialize instance weight distribution.
+	mt = shuffledTrainData.n_cols; /***CHECK IF THIS SHOULD BE ROWS OR COLS***/
+	// logFile << "mt = "<< mt <<"N cols: "<<shuffledTrainData.n_cols<<std::endl;
+
+	Dt = arma::ones<arma::colvec>(mt)/mt; // Initialize instance weight distribution.
 	Dt_sampBySamp = Dt;
-	
+
 	if(initialized){
 		// Step 1: COmpute error of existing ensemble on new data.
-		predict(shufledTrainData,prediction);
+		predict(shuffledTrainData,prediction);
 		//compute mean squared error
 		//mseInit = calcMSE(testLabels,prediction);
 		mseInit = squaredError(prediction,shuffledTrainLabels) / shuffledTrainData.n_cols;
+		//logFile << squaredError(prediction,shuffledTrainLabels) << "  ";
 		Et = arma::accu(mseInit);
 		// Get beta for each network.
 		Bt = Et / (1-Et);
@@ -229,77 +265,108 @@ void LearnNSEPredictor<NetType,OptType>::updateNSE(const arma::mat &trainData, c
 		Wt_sampBySamp = 1/mt * Bt_sampBySamp;
 		Dt_sampBySamp = Wt_sampBySamp/arma::accu(Wt_sampBySamp);
 	}
+
 	// Step 2: Create new classifier
-	if (trainingCounter < nNets)
+	if (firstTrainingBatch)
 		netInd = trainingCounter;
 	else
 		netInd = trainingCounter % nNets; //*****MAYBE WORK ON PROPER PRUNING*****//
-
-	nnFFNVec[netInd]->importWeights(_initWeights);
-	nnFFNVec[netInd]->runLM(shuffledTrainData,shuffledTrainLabels,shuffledValData,shuffledValLabels,0.0,1e-12,1e10,500,20);
-
-	arma::colvec weightsCol;
-	nnFFNVec[netInd]->exportWeights(weightsCol);
-	if(i==0) {
-		weightsMat.set_size(weightsCol.n_elem,nets.size());
-	}
-	weightsMat.col(i) = weightsCol;
 	
-	importWeights(weightsMat);
+	arma::mat weightsMat;
+	exportWeights(weightsMat);
+	logFile <<"F2: EXPORTED WEIGHTS"<<std::endl;
+	nnFFNVec[netInd]->importWeights(_initWeights);
+	predict(shuffledTrainData,prediction_tmp);
+	nnFFNVec[netInd]->runLM(shuffledTrainData,shuffledTrainLabels,shuffledValData,shuffledValLabels,0.0,1e-12,1e10,500,20);
+	
+	/*******NOT SURE THAT WEIGHTS NEED TO BE EXPORTED**********/
+	
+	// nnFFNVec[netInd]->exportWeights(weightsCol);
+	// if(netInd==0) {
+	// 	weightsMat.set_size(weightsCol.n_elem,nets.size());
+	// }
+	// weightsMat.col(i) = weightsCol;
+	
+	// importWeights(weightsMat);
 
 	// Step 3: Evaluate on testdata.
+
 	predict(shuffledTrainData,prediction_eval);
-	if(trainingCounter < nNets)
-		indMax = trainingCounter;
+	#ifdef LOGGING
+	// 	/**********NOT GETTING HERE**********/
+	// 	//logFile << "epsilon_tk: " << epsilon_tk << std::endl;
+	// 	logFile <<"SEARCH FOR THIS"<<std::endl;
+	// 	shuffledTrainLabels.print(logFile);
+		logFile <<"post training:";
+		prediction_eval.print(logFile);
+		logFile <<"pre training:";
+		prediction_tmp.print(logFile);
+
+	#endif
+	if(firstTrainingBatch)
+		indMax = trainingCounter + 1;
 	else
 		indMax = nNets;
+	float tmpFloat;
 
 	for( i = 0; i < indMax; i++){
-		epsilon_tk = arma::accu(Dt_sampBySamp.*squaredError(prediction_eval,shuffledTrainLabels)/mt);
+		epsilon_tk = arma::accu(Dt_sampBySamp % squaredError(prediction_eval,shuffledTrainLabels)/mt;
+		tmpFloat = arma::accu(squaredError(prediction_eval,shuffledTrainLabels))/mt;
+		#ifdef LOGGING 
+		logFile <<"Search for this: " <<epsilon_tk<<" tmpfloat: "<<tmpFloat << std::endl;
+		//Dt_sampBySamp.print(logFile);
+		#endif
 		if(epsilon_tk > 0.5){
 			
-			if((i<netInd && trainingCounter < nNets) || (i != netInd && trainingCounter >= nNets)) 
+			if((i<netInd && firstTrainingBatch) || (i != netInd && !firstTrainingBatch)) 
 				epsilon_tk = 0.5; // if old network keep 
 			else if(i == netInd) { //Retrain
 				nnFFNVec[netInd]->importWeights(_initWeights);
 				nnFFNVec[netInd]->runLM(shuffledTrainData,shuffledTrainLabels,shuffledValData,shuffledValLabels,0.0,1e-12,1e10,500,20);
 
-				arma::colvec weightsCol;
-				nnFFNVec[netInd]->exportWeights(weightsCol);
-				if(i==0) {
-					weightsMat.set_size(weightsCol.n_elem,nets.size());
-				}
-				weightsMat.col(i) = weightsCol;
+				//arma::colvec weightsCol;
+				// nnFFNVec[netInd]->exportWeights(weightsCol);
+				/******************/
+				// if(i==0) {
+				// 	weightsMat.set_size(weightsCol.n_elem,nets.size());
+				// }
+				// weightsMat.col(i) = weightsCol;
 				
-				importWeights(weightsMat);
+				// importWeights(weightsMat);
 			}
 		}
 
-		beta[k] = epsilon_tk /(1-epsilon_tk);
+		beta(betaInd,i) = epsilon_tk /(1-epsilon_tk);
 	}
 	// Step 4: Compute classifier Weights.
 	if (trainingCounter == 0){
-		if (beta[trainingCounter] < errThresh)
-			beta[trainingCounter] = errThresh;
+		if (beta(betaInd,trainingCounter) < errThresh)
+			beta(betaInd,trainingCounter) = errThresh;
 
-		netWeights = log(1/beta[trainingCounter]);
+		netWeights[i] = log(1/beta(betaInd,trainingCounter));
 	}
 	else{
 		for(i = 0; i < indMax; i++){
-			b = nNets - i - sigmoidThresh;
-
 			if (trainingCounter < nNets)
 				omega = arma::regspace(0,trainingCounter-i);
 			else
 				omega = arma::regspace(0,nNets - 1);
 
-			omega = 1/(1+exp(sigmoidSlope % (omega - b))); //For vectors, arma overloads % to be elt multiply.
-			omega = (omega/arma::accu(omega)).t;
 
+			b = (nNets - i - sigmoidThresh) * arma::ones(omega.n_elem); 
+			sigSlopeVec = sigmoidSlope* arma::ones(omega.n_elem);
+			omega = 1/(1+exp(sigSlopeVec % (omega - b))); //For vectors, arma overloads % to be elt multiply.
+			omega = omega/arma::accu(omega);
+			omega = omega.t();
+
+			betaVec = beta.col(i);	
 			if(trainingCounter < nNets)
-				beta_hat = sum(omega % (beta[i:trainingCounter,i])); /****NOT PROPER, NEED TO SUBSET****/
+				beta_hat = arma::sum(omega % (betaVec.subvec(i,trainingCounter))); /****NOT PROPER, NEED TO SUBSET****/
 			else 
-			beta_hat = arma::accu(omega % beta[end-numClassifiers+1:end,k]);
+				/**************NEED TO USE CIRCULAR INDEXING*******************/
+				betaVec = arma::zeros(betaVec.n_elem);
+				circularShift(betaVec,betaTmp,nNets-betaInd);
+				beta_hat = arma::accu(omega % betaTmp); //betaVec.span(nNets-[end-numClassifiers+1:end,i]);
 
 			if (beta_hat < errThresh)
 				beta_hat = errThresh;
@@ -307,102 +374,29 @@ void LearnNSEPredictor<NetType,OptType>::updateNSE(const arma::mat &trainData, c
 		}
 	}
 
+	trainingCounter += 1;
+	betaInd = (betaInd + 1) % nNets;
 	// Step 5: Get error from validation set.
 
 
 }
 
 
-template <class NetType, template <class T> class OptType>
-double squaredError(arma::colvec vector1, arma::colvec vector2){
-	err = vector1 - vector2;
-	return err % err;
-}
-
-template <class NetType, template <class T> class OptType>
-void LearnNSEPredictor<NetType,OptType>::train(const arma::mat &trainData, const arma::mat &trainLabels, double trainDataFrac) {
-	arma::mat prediction;
-	arma::mat shuffledTrainData;
-	arma::mat shuffledTrainLabels;
-	arma::mat shuffledValData;
-	arma::mat shuffledValLabels;
-
-	//resize shuffle buffers
-	shuffledTrainData.set_size(trainData.n_rows,
-		(int) floor(trainData.n_cols * trainDataFrac));
-	shuffledTrainLabels.set_size(trainLabels.n_rows,
-		(int) floor(trainLabels.n_cols * trainDataFrac));
-	shuffledValData.set_size(trainData.n_rows,
-		(int) (trainData.n_cols - floor(trainData.n_cols * trainDataFrac)));
-	shuffledValLabels.set_size(trainLabels.n_rows,
-		(int) (trainLabels.n_cols - floor(trainLabels.n_cols * trainDataFrac)));
-
-	//train NNs
-	arma::mat weightsMat;
-	for(int i=0; i<nets.size(); i++) {
-		//nets[i]->net.Train(trainData, trainLabels, *_opts[i]);
-
-		//shuffle data and split into train/val sets
-		arma::colvec shuffledOrder = arma::regspace(0,1,trainData.n_cols -1);
-		shuffledOrder = arma::shuffle(shuffledOrder);
-		for(int i=0; i<trainData.n_cols; i++) {
-			if(i < (int) floor(trainData.n_cols * trainDataFrac)) {
-				shuffledTrainData.col(i) = trainData.col(shuffledOrder(i));
-				shuffledTrainLabels.col(i) = trainLabels.col(shuffledOrder(i));
-			} else {
-				shuffledValData.col(i-((int) floor(trainData.n_cols * trainDataFrac))) =
-					trainData.col(shuffledOrder(i));
-				shuffledValLabels.col(i-((int) floor(trainLabels.n_cols * trainDataFrac))) = 
-					trainLabels.col(shuffledOrder(i));				
-			}
-		}
-
-		
-		//init weights to same init values each time and train using LM
-		nnFFNVec[i]->importWeights(_initWeights);
-		/***********************This is the function that will be changed.***************************/
-		nnFFNVec[i]->runLM(shuffledTrainData,shuffledTrainLabels,shuffledValData,shuffledValLabels,0.0,1e-12,1e10,500,20);
-		// nnFFNVec[i]->runRLM(shuffledTrainData,shuffledTrainLabels,shuffledValData,shuffledValLabels,0.0,1e-12,1e10,500,20);
-
-		//update weights in MLPack NN
-		arma::colvec weightsCol;
-		nnFFNVec[i]->exportWeights(weightsCol);
-		if(i==0) {
-			weightsMat.set_size(weightsCol.n_elem,nets.size());
-		}
-		weightsMat.col(i) = weightsCol;
-
-	}
-	importWeights(weightsMat);
-
-/*	//test NNs
-	for(int i=0; i<nets.size(); i++) {
-		//run NN
-		nets[i]->net.Predict(testData,prediction);
-		
-		//compute mean squared error
-		_mse_perfs[i] = 0;
-		for(int j=0; j<testData.n_cols; j++) {
-			_mse_perfs[i] = norm(prediction.col(j)-testLabels.col(j),2) + _mse_perfs[i];
-		}
-		_mse_perfs[i] = _mse_perfs[i] / testData.n_cols;
-	}
-*/
-}
 
 /************GOING TO HAVE TO MODIFY THIS TO USE ENSEMBLE PROPERLY************/
 template <class NetType, template <class T> class OptType>
 void LearnNSEPredictor<NetType,OptType>::predict(arma::mat &inputData, arma::mat &prediction) {
 	arma::mat tmpPrediction;
 	int nNets = nets.size();
-
+	int indMax;
 	if (trainingCounter < nNets)
-		indMax = trainingCounter;
+		indMax = trainingCounter + 1;
 	else
 		indMax = nNets;
-
+	
 	for(int i=0; i<indMax; i++) {
 		nets[i]->net.Predict(inputData,tmpPrediction);
+		
 		if(i==0) {
 			prediction = tmpPrediction * netWeights[i];
 		} else {
@@ -410,7 +404,8 @@ void LearnNSEPredictor<NetType,OptType>::predict(arma::mat &inputData, arma::mat
 		}
 	}
 	prediction = prediction / nNets;
-	
+
+	//logFile << "in predict, prediction size: "<< arma::size(prediction)<<std::endl;
 /*
 	arma::colvec inputDataCol;
 	arma::colvec tmpPredictionCol;

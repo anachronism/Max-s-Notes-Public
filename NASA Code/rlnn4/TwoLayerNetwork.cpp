@@ -1,3 +1,6 @@
+#ifndef TWOLAYERNETWORK
+#define TWOLAYERNETWORK
+
 #include <mlpack/core.hpp>
 
 #include <mlpack/methods/ann/activation_functions/logistic_function.hpp>
@@ -47,3 +50,5 @@ class TwoLayerNetwork {
 
 	private:
 };
+
+#endif

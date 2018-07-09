@@ -1,5 +1,7 @@
 //TODO:
 ///(1.) Remove testing set from NN.  Just have training set.
+#ifndef NEURALNETWORKPREDICTOR 
+#define NEURALNETWORKPREDICTOR
 
 #include <mlpack/core.hpp>
 
@@ -454,3 +456,5 @@ int main() {
 	std::cout << "Input Label: " << std::endl << inputLabel << std::endl;
 	std::cout << "Predicted Output: " << predOutput << std::endl;
 }*/
+
+#endif

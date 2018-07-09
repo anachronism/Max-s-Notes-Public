@@ -1,9 +1,12 @@
+#ifndef FEEDFORWARDNETWORK 
+#define FEEDFORWARDNETWORK
+
 #include <vector>
 #include <cmath>
 #include <string>
 #include <iostream>
 #include <mlpack/core.hpp>
-
+#include "/home/max/Documents/Max-s-Notes/NASA Code/rlnn4/Logging.hpp"
 
 class FeedForwardNetwork {
 public:
@@ -601,6 +604,9 @@ void FeedForwardNetwork::runLM(const arma::mat &inpPatternTrain,
 	double bestErrorVal = arma::datum::inf;
 	int valFailIter;
 
+	#ifdef LOGGING
+		logFile << "IN LM, BEGINNING (?)" <<std::endl;
+	#endif
 	//calculate jacobian
 	loopIter=0;
 	mu=.001;
@@ -687,11 +693,14 @@ void FeedForwardNetwork::runLM(const arma::mat &inpPatternTrain,
 		}
 
 		//print progress
-		//std::cout << loopIter << ":" << "grad: " << grad << ", perf: " << newError << ", valStops: " << valFailIter << std::endl;
-
+		// #ifdef LOGGING
+		// logFile << loopIter << ":" << "grad: " << grad << ", perf: " << newError << ", valStops: " << valFailIter << std::endl;
+		// #endif 
 		loopIter++;
 	}
-
+	#ifdef LOGGING
+		logFile << "IN LM, END: "<<newErrorVal <<std::endl;
+	#endif
 	updateNetworkWithWeights(network_,trainedWeights_);
 }
 
@@ -948,3 +957,5 @@ void FeedForwardNetwork::printWeights(const arma::colvec &weights) {
 	std::cout<< weights << std::endl;
 	std::cout<<std::endl;	
 }
+
+#endif

@@ -156,6 +156,9 @@ int main() {
 	//cogEngParams.nnAppSpec_transmitPowerList = arma::trans(arma::regspace(-10.0,1.0,0.0)); //1.0 dB spacing
 	//TrainingDataBuffer Params
 	cogEngParams.buf_nTrainTestSamples = 200;
+	cogEngParams.sigmoidSlope = 0.5;
+	cogEngParams.sigmoidThresh = 10;
+	cogEngParams.errorThresh = 10e-5;
 
 	#ifdef LOGGING
 	logFile << boost::posix_time::microsec_clock::local_time() << std::endl;
