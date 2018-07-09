@@ -248,6 +248,9 @@ void LearnNSEPredictor<NetType,OptType>::train(const arma::mat &trainData, const
 	Dt_sampBySamp = Dt;
 
 	if(initialized){
+		#ifdef LOGGING
+			logFile << "F3" <<std::endl;
+		#endif
 		// Step 1: COmpute error of existing ensemble on new data.
 		predict(shuffledTrainData,prediction);
 		//compute mean squared error
@@ -274,35 +277,17 @@ void LearnNSEPredictor<NetType,OptType>::train(const arma::mat &trainData, const
 	
 	arma::mat weightsMat;
 	exportWeights(weightsMat);
-	logFile <<"F2: EXPORTED WEIGHTS"<<std::endl;
+	//logFile <<"F2: EXPORTED WEIGHTS"<<std::endl;
 	nnFFNVec[netInd]->importWeights(_initWeights);
-	predict(shuffledTrainData,prediction_tmp);
 	nnFFNVec[netInd]->runLM(shuffledTrainData,shuffledTrainLabels,shuffledValData,shuffledValLabels,0.0,1e-12,1e10,500,20);
 	
-	/*******NOT SURE THAT WEIGHTS NEED TO BE EXPORTED**********/
-	
-	// nnFFNVec[netInd]->exportWeights(weightsCol);
-	// if(netInd==0) {
-	// 	weightsMat.set_size(weightsCol.n_elem,nets.size());
-	// }
-	// weightsMat.col(i) = weightsCol;
-	
-	// importWeights(weightsMat);
-
-	// Step 3: Evaluate on testdata.
+	//update weights in MLPack NN
+	nnFFNVec[netInd]->exportWeights(weightsCol);
+	weightsMat.col(netInd) = weightsCol;
+	importWeights(weightsMat);
 
 	predict(shuffledTrainData,prediction_eval);
-	#ifdef LOGGING
-	// 	/**********NOT GETTING HERE**********/
-	// 	//logFile << "epsilon_tk: " << epsilon_tk << std::endl;
-	// 	logFile <<"SEARCH FOR THIS"<<std::endl;
-	// 	shuffledTrainLabels.print(logFile);
-		logFile <<"post training:";
-		prediction_eval.print(logFile);
-		logFile <<"pre training:";
-		prediction_tmp.print(logFile);
 
-	#endif
 	if(firstTrainingBatch)
 		indMax = trainingCounter + 1;
 	else
@@ -310,12 +295,8 @@ void LearnNSEPredictor<NetType,OptType>::train(const arma::mat &trainData, const
 	float tmpFloat;
 
 	for( i = 0; i < indMax; i++){
-		epsilon_tk = arma::accu(Dt_sampBySamp % squaredError(prediction_eval,shuffledTrainLabels))/mt;
+		epsilon_tk = arma::accu(Dt_sampBySamp % squaredError(prediction_eval,shuffledTrainLabels).t())/mt;
 		tmpFloat = arma::accu(squaredError(prediction_eval,shuffledTrainLabels))/mt;
-		#ifdef LOGGING 
-		logFile <<"Search for this: " <<epsilon_tk<<" tmpfloat: "<<tmpFloat << std::endl;
-		//Dt_sampBySamp.print(logFile);
-		#endif
 		if(epsilon_tk > 0.5){
 			
 			if((i<netInd && firstTrainingBatch) || (i != netInd && !firstTrainingBatch)) 
