@@ -53,6 +53,11 @@ class access;
 
 void circularShift(arma::colvec vecToShift,arma::colvec& retVec, int shiftNum){
 	
+	#ifdef LOGGING
+		logFile << "Circular shift" <<std::endl;
+	#endif
+	retVec.set_size(vecToShift.n_elem);
+		
 	for (int i = 0; i < vecToShift.n_elem; i++){
 		retVec[i] = vecToShift((i+shiftNum)%vecToShift.n_elem);
 	}
@@ -281,9 +286,20 @@ void LearnNSEPredictor<NetType,OptType>::train(const arma::mat &trainData, const
 	nnFFNVec[netInd]->importWeights(_initWeights);
 	nnFFNVec[netInd]->runLM(shuffledTrainData,shuffledTrainLabels,shuffledValData,shuffledValLabels,0.0,1e-12,1e10,500,20);
 	
+	#ifdef LOGGING
+	logFile << "after first runLM" <<std::endl;
+	#endif
+	
 	//update weights in MLPack NN
 	nnFFNVec[netInd]->exportWeights(weightsCol);
+	#ifdef LOGGING
+	logFile << "pre Assign" <<std::endl;
+	#endif
 	weightsMat.col(netInd) = weightsCol;
+	#ifdef LOGGING
+	logFile << "post Assign" <<std::endl;
+	#endif
+
 	importWeights(weightsMat);
 
 	predict(shuffledTrainData,prediction_eval);
@@ -294,9 +310,19 @@ void LearnNSEPredictor<NetType,OptType>::train(const arma::mat &trainData, const
 		indMax = nNets;
 	float tmpFloat;
 
+	#ifdef LOGGING
+	logFile << "F4" <<std::endl;
+	#endif
+
 	for( i = 0; i < indMax; i++){
 		epsilon_tk = arma::accu(Dt_sampBySamp % squaredError(prediction_eval,shuffledTrainLabels).t())/mt;
+		#ifdef LOGGING
+			logFile << "F5" <<std::endl;
+		#endif
 		tmpFloat = arma::accu(squaredError(prediction_eval,shuffledTrainLabels))/mt;
+		#ifdef LOGGING
+			logFile << "F6" <<std::endl;
+		#endif
 		if(epsilon_tk > 0.5){
 			
 			if((i<netInd && firstTrainingBatch) || (i != netInd && !firstTrainingBatch)) 
@@ -317,6 +343,9 @@ void LearnNSEPredictor<NetType,OptType>::train(const arma::mat &trainData, const
 			}
 		}
 
+		#ifdef LOGGING
+			logFile << "F7" <<std::endl;
+		#endif
 		beta(betaInd,i) = epsilon_tk /(1-epsilon_tk);
 	}
 	// Step 4: Compute classifier Weights.
@@ -333,28 +362,50 @@ void LearnNSEPredictor<NetType,OptType>::train(const arma::mat &trainData, const
 			else
 				omega = arma::regspace(0,nNets - 1);
 
-
+			#ifdef LOGGING
+				logFile << "F8" <<std::endl;
+			#endif
 			b = (nNets - i - sigmoidThresh) * arma::ones(omega.n_elem); 
 			sigSlopeVec = sigmoidSlope* arma::ones(omega.n_elem);
 			omega = 1/(1+exp(sigSlopeVec % (omega - b))); //For vectors, arma overloads % to be elt multiply.
 			omega = omega/arma::accu(omega);
-			omega = omega.t();
-
+			omega = omega.t();	
+			#ifdef LOGGING
+				logFile << "F9" <<std::endl;
+			#endif
 			betaVec = beta.col(i);	
-			if(trainingCounter < nNets)
+			#ifdef LOGGING
+				logFile << "F9a" <<std::endl;
+			#endif
+			if(trainingCounter < nNets){
+				#ifdef LOGGING
+					logFile << "F9b" <<std::endl;
+				#endif
 				beta_hat = arma::sum(omega % (betaVec.subvec(i,trainingCounter))); /****NOT PROPER, NEED TO SUBSET****/
-			else 
+			}
+			else {
 				/**************NEED TO USE CIRCULAR INDEXING*******************/
 				betaVec = arma::zeros(betaVec.n_elem);
+				#ifdef LOGGING
+					logFile << "F9b_alt" <<std::endl;
+				#endif
 				circularShift(betaVec,betaTmp,nNets-betaInd);
+				#ifdef LOGGING
+					logFile << "F9c" <<std::endl;
+				#endif
 				beta_hat = arma::accu(omega % betaTmp); //betaVec.span(nNets-[end-numClassifiers+1:end,i]);
-
+			}
+			#ifdef LOGGING
+				logFile << "F9d" <<std::endl;
+			#endif
 			if (beta_hat < errThresh)
 				beta_hat = errThresh;
 			netWeights[i] = log(1/beta_hat);
 		}
 	}
-
+	#ifdef LOGGING
+		logFile << "F10" <<std::endl;
+	#endif
 	trainingCounter += 1;
 	betaInd = (betaInd + 1) % nNets;
 	// Step 5: Get error from validation set.
