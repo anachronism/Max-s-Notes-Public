@@ -39,9 +39,9 @@
 
 #include <iostream>
 
-#ifndef LOGGING
-#define LOGGING
-#endif
+// #ifndef LOGGING
+// #define LOGGING
+// #endif
 
 using namespace mlpack;
 

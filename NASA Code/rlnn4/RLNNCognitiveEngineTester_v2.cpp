@@ -5,6 +5,7 @@
 #include "/home/max/Documents/Max-s-Notes/NASA Code/rlnn4/EthUDPTransmitterSimple.cpp"
 #include "/home/max/Documents/Max-s-Notes/NASA Code/rlnn4/ML605Driver.cpp"
 #include "/home/max/Documents/Max-s-Notes/NASA Code/rlnn4/Logging.hpp"
+#include "/home/max/Documents/Max-s-Notes/NASA Code/rlnn4/memoryManagement.hpp"
 #include "/home/max/Documents/Max-s-Notes/NASA Code/rlnn4/ASRPDriver.cpp"
 #include <boost/date_time/posix_time/posix_time.hpp>
 
@@ -14,10 +15,6 @@
 #include <thread>
 
 #include <iostream>
-
-#define LM false
-#define RLM false
-#define NSE true
 
 using namespace mlpack;
 
@@ -156,9 +153,11 @@ int main() {
 	//cogEngParams.nnAppSpec_transmitPowerList = arma::trans(arma::regspace(-10.0,1.0,0.0)); //1.0 dB spacing
 	//TrainingDataBuffer Params
 	cogEngParams.buf_nTrainTestSamples = 200;
+	#if NSE==1
 	cogEngParams.sigmoidSlope = 0.5;
 	cogEngParams.sigmoidThresh = 10;
 	cogEngParams.errorThresh = 10e-5;
+	#endif
 
 	#ifdef LOGGING
 	logFile << boost::posix_time::microsec_clock::local_time() << std::endl;
