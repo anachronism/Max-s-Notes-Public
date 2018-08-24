@@ -1,29 +1,26 @@
-\documentclass[11pt]{report}
-\usepackage{amsmath}
-\usepackage{algorithm}
-\usepackage[noend]{algpseudocode}
-\usepackage[margin=1.5in]{geometry}
-\usepackage{amsfonts}
-\usepackage{graphicx}
-\usepackage{epstopdf}
-\usepackage[mathscr]{euscript}
-\makeatletter
-\newcommand{\INDSTATE}[1][1]{\STATE\hspace{#1\algorithmicindent}}
+%\documentclass[11pt]{report}
+%\usepackage{amsmath}
+%\usepackage{algorithm}
+%\usepackage[noend]{algpseudocode}
+%\usepackage[margin=1.5in]{geometry}
+%\usepackage{amsfonts}
+%\usepackage{graphicx}
+%\usepackage{subfig}
+%\usepackage{subfloat}
+%\usepackage{epstopdf}
+%\usepackage[mathscr]{euscript}
+%\makeatletter
+%\newcommand{\INDSTATE}[1][1]{\STATE\hspace{#1\algorithmicindent}}
 % Reinsert missing \algbackskip
-\def\algbackskip{\hskip-\ALG@thistlm}
-\makeatother
+%\makeatother
 
-\begin{document}
-	\chapter{List of Acronyms}
-	GRC, NASA, SCaN, TDRSS, ML, RLNN, NN, RL, CART.
-	\par \textbf{\textit{make table of acronyms for overall report. GLOSSARIES CURRENTLY NOT WORKING PROPERLY}}
-	
+%\begin{document}	
 	\chapter{Overview on Machine Learning Applied to Satellite Communications}
 %	\gls{apc}
 	%\printglossary[style=long]		
 		\par In this chapter, an overview of the SCaN Testbed Cognitive Engine will be provided. In order to understand and motivate decisions that were made in the initial development, a general overview about machine learning will first be provided. Then, the work accomplished by the team prior to this thesis will be described. After this, topics that are relevant to the improvements introduced to the CE by this thesis will be discussed. Finally, a summary of the chapter will be provided.
 	\section{A General Overview of Machine Learning}\label{bg:introToML}
-	\par With the advent of increasingly more capable and accessible processors, machine learning has become a useful tool in many different fields. This is in part driven by the flexibility and efficiency that machine learning is capable of. There are three major categories of ML algorithms\cite{IntroductionToML}: supervised learning, unsupervised learning, and reinforcement learning. Supervised learning takes a set of input values $X$ and a set of target results $Y$, and attempts to create a mapping $x \to g(x)\to y$. Once the algorithm is trained, this mapping $g(x)$ can be used with new input values $x_{new}$ to predict new target values $y_{new}$. Unlike supervised learning, unsupervised learning is only given a set of input values $X$. With this set of input values, unsupervised learning attempts to understand the inherent structure within the input values. In more general terms, unsupervised learning is attempting to make inferences based on the $X$ given to it. Reinforcement learning is unlike either of the two previously described categories. The primary focus of reinforcement learning is to map situations to actions based on maximizing a reward value \cite{rl_intro}. Unlike supervised learning, where the there is an $X$ and $Y$ given to find $g(x)$, reinforcement learning algorithms have $X$ and some knowledge of $R(x)\sim g(x)$, and are trying to choose $X$ in order to get a large $Y$. 
+	\par With the advent of increasingly more capable and accessible processors, machine learning has become a useful tool in many different fields. This is in part driven by the flexibility and efficiency that machine learning is capable of. There are three major categories of ML algorithms\cite{introToML}: supervised learning, unsupervised learning, and reinforcement learning. Supervised learning takes a set of input values $X$ and a set of target results $Y$, and attempts to create a mapping $x \to g(x)\to y$. Once the algorithm is trained, this mapping $g(x)$ can be used with new input values $x_{new}$ to predict new target values $y_{new}$. Unlike supervised learning, unsupervised learning is only given a set of input values $X$. With this set of input values, unsupervised learning attempts to understand the inherent structure within the input values. In more general terms, unsupervised learning is attempting to make inferences based on the $X$ given to it. Reinforcement learning is unlike either of the two previously described categories. The primary focus of reinforcement learning is to map situations to actions based on maximizing a reward value \cite{rl_intro}. Unlike supervised learning, where the there is an $X$ and $Y$ given to find $g(x)$, reinforcement learning algorithms have $X$ and some knowledge of $R(x)\sim g(x)$, and are trying to choose $X$ in order to get a large $Y$. 
 	
 	\begin{figure}[ht]
 		\centering
@@ -174,14 +171,34 @@
 	\par There are four different communication channels between the fixed ground stations at GRC/White Sands, the moving ScaN Testbed SDR on board the ISS, and the TDRSS satellite at a GEO orbit, as illustrated by Figure \textbf{\textit{INCLUDE PICTURE FROM PAULO'S thing}}. Radio parameter reconfiguration might be done during periods of signal fading, especially those happening during low elevation angles of the SCaN Testbed antenna, while tracking the TDRS satellite, or low elevation angles from a GRC ground station antenna, while tracking the ScaN Testbed. The project focuses on the direct communication between GRC and the SCaN Testbed.
 	\par\textbf{\textit{make MAKETHISFIGURE, eg the CE diagram figure}}
 	\par A high level overview of the proposed CE is shown in Figure \ref{MAKETHISFIGURE}. The platform gathers telemetry data reported from the transmitter or measured at the receiver. A predictor uses past information to predict radio parameter values and uses learning techniques to control storage memory growth.\textbf{\textit{this sentence sucks}.} Decision logic based on the predictions will decide what adaptations will need to occur. The CE learns the environment behavior by building a model that maps observed telemetry data to radio parameter sets. The CE is shown in more detail in Figure \ref{make this figure too}, it will be discussed in more detail in Section \ref{reference to the methods chapter}.
-	\par In this thesis, the goals were twofold: to explicitly deal with the catestrophic forgetting that occurs in MLPs, and to investigate the potential utility of GANs. In the following section, both of these subjects will be discussed in more detail.
+	\par In this thesis, the goals were twofold: to explicitly deal with the catastrophic forgetting that occurs in MLPs, and to investigate the potential utility of GANs. In the following section, both of these subjects will be discussed in more detail.
 	
 	\section{Advanced Topics in Machine Learning}
 	\subsection{Online Learning and Catastrophic Forgetting}
 	\par In supervised learning, there are two different learning paradigms: online learning and offline learning. Offline algorithms assume that there is one set of inputs and outputs to train on, and that once training is complete that there will be no updates to the algorithm. The training methods described in Section \ref{bg:introToML} are all considered offline methods. This is contrasted with online algorithms, that update as new data is received. The choice between an offline algorithm and an online algorithm is dependent on the problem that is selected. With a stationary dataset, a single training period can be sufficient. However, if the dataset is nonstationary, there is utility in multiple training periods, which can capture the shifting of the data, also known as concept drift. Because effective space communications systems are dependent on many nonstationary variables, online methods are more suited for this project.
 	\par The most basic category of online methods are generalizations of offline methods. In this category, a window of incoming data is collected. Once this window is full, an offline method is trained with this window of data. Then, some number of datapoints is dropped, and the window is filled again. This moving window process is the most straightforward extrapolation of offline algorithms. In the baseline CE, this method is applied to the Levenberg-Marquardt method. The moving-window approach has one major problem that it introduces. The LM algorithm updates the weights completely using the data that is put into it. This extends to many first-order offline algorithms as well (SGD, ADAM, RMSProp, etc.). In this type of online method, the window moves and drops old datapoints, with these old datapoints no longer influencing how the model is trained. Because of this, the model will lose the information that was encoded through these datapoints. This is called catastrophic forgetting.  Catastrophic forgetting primarily affects learning in non-stationary environments. If an environment is stationary, the fact that datapoints are no longer used in training has little effect, as the datapoints replacing them will have similar values. In non-stationary environments, however, the loss of information is more significant. If there is any cyclical nature of the changes, the information will have to be relearned each time.
-	\par \textbf{\textit{Include diagram illustrating what the problem with catastrophic forgetting is}}
-	\par One way to deal with this is to use a recursive training method. This updates the network based on batches of samples each time, but uses these samples to update an internal state. In this process, there is a forgetting factor $\alpha$ built in, allowing for the network to forget past inputs in a more explicit manner than the standard batch-update method. In the following equations, $\varepsilon(h_t) = \sqrt{J(h_t)}$, $P_t$ can be considered the covariance matrix of the weights, $\Omega^T(h_t)$ is a modified gradient for y, allowing for a normalization factor $\rho$ to be added in one weight at a time. This is further described by Ngia and Sjoberg \cite{bg:rlm_establish}. The second row of $\Omega^T(h_t)$ is 0 for all indices where $i\ mod\ nWeights+1 \neq t$, and 1 where $i\ mod\ nWeights+1 = t$. $\alpha$ is the rate of forgetting. 
+	\begin{figure}[ht]
+		\centering
+		\begin{subfloat}%[First training. Since no training has occurred beforehand, the entire training buffer is used.]
+			\centering
+			\includegraphics[width=\textwidth]{figures/CatastrophicForgettingA}
+			\caption{First training. Since no training has occurred beforehand, the entire training buffer is used.}
+		\end{subfloat}
+		\begin{subfloat}
+		\centering
+		\includegraphics[width=\textwidth]{figures/CatastrophicForgettingB}
+		\caption{Second training. Some of the first training epoch is kept, but most of it is replaced by new data from epoch 2.}
+	\end{subfloat}%
+	\begin{subfloat}
+	\centering
+	\includegraphics[width=\textwidth]{figures/CatastrophicForgettingC}
+	\caption{Third training. All data from epoch 1 is no longer kept, and only data from epoch 2 is in the training buffer. A portion of epoch 1 is no longer in the memory of the MLP.}
+	\end{subfloat}%
+	\caption{A visual representation of how catastrophic forgetting occurs.}
+	
+	\end{figure}
+	\par \textbf{\textit{FIX CAPTIONS OF SUBFLOATS TO ACTUALLY USE SUBCAPTIONS}}
+	\par One way to deal with this is to use a recursive training method. This updates the network based on batches of samples each time, but uses these samples to update an internal state. In this process, there is a forgetting factor $\alpha$ built in, allowing for the network to forget past inputs in a more explicit manner than the standard batch-update method. In the following equations, $\varepsilon(h_t) = \sqrt{J(h_t)}$, $P_t$ can be considered the covariance matrix of the weights, $\Omega^T(h_t)$ is a modified gradient for y, allowing for a normalization factor $\rho$ to be added in one weight at a time. This is further described by Ngia and Sjoberg \cite{rlmBasis}. The second row of $\Omega^T(h_t)$ is 0 for all indices where $i\ mod\ nWeights+1 \neq t$, and 1 where $i\ mod\ nWeights+1 = t$. $\alpha$ is the rate of forgetting. 
 	\begin{align}
 		\Omega^T(h_t) &= \begin{bmatrix}
 			&& \nabla_y^T(h_t) && \\ 0 & ... & 1 & ... & 0
@@ -196,13 +213,30 @@
 		\textbf{\textit{REVISIT, include pre-recursive formulation.}}
 	\par The update process is split into three substeps, each substep updating a a related aspect of the internal or external state of the NN. The first step computes an intermediate state $S(h_t)$, which reduces the necessary matrix inversion to a 2x2 matrix. The second step updates the covariance matrix, and finally the third step updates the weights. 
 	\subsubsection{Ensemble Learning}\label{bg:advanced_ensemble}
+	\textbf{\textit{Don't forget to cite cart in this bg section \cite{cartIntro}}}
 	\par A different approach to deal with Catastrophic Forgetting is to use ensemble training methods. Ensemble methods use a collective of learning algorithms to produce improved results over each individual learning algorithm. In general, ensemble methods use a set of weaker algorithms that are combined with or without some sort of weighting to produce a unified result. In classification problems a weighted majority voting is often used, while in regression problems a weighted median or mean is often used. Frequently, a CART is used as the base algorithm, due to its simple implementation and reasonable performance. Once a base algorithm is chosen, the difference between ensemble implementations is how the ensemble is created and used. For instance, in Adaboost, a series of base learners is trained, with each successive base learner trained in a way that emphasizes points that the previously trained learners have trouble with. This differs from bagging, a different algorithm where each base learner is trained with a different subset of the total training data. These examples are provided simply to show how ensemble learning methods may differ.
 	\par The method most relevant to catastrophic forgetting is Learn++.NSE. For each window of samples, Learn++.NSE creates a new learner, trained on the window. The samples in the training window are weighted by how much error the pre-existing learners had in predicting the value, ensuring that the new learner is better at recognizing these samples. It then weights the new learner and existing learners based on how well they work on the training data, using a metric such as MSE. In doing this, the existing learner contributes to the resulting prediction based on how well it worked on the most recent data. 
 	\textbf{\textit{PUT ACTUAL PSEUDOALGORITHM HERE, THEN EXPLAIN}}
-	\par In the standard implementation of Learn++.NSE, a classification problem is targeted, and it is supposed that an infinite number of learners can be created. The adjustment from classification to regression required the algorithm to use MSE instead of cross-entropy as an error function, and a method for limiting the number of learners was required as well. 
+		\begin{algorithm}[ht]
+		\caption{CART Pseudoalgorithm}
+		\label{code:bg_cart}
+		\begin{algorithmic}[1]
+			\Procedure{CART}{}
+			\While{$leafNotReached$}
+			\State $x = x_{eval} \in X$
+			\If {$x > \textit{branchValue}$} Branch right.
+			\Else \ Branch left.
+			\EndIf
+			\EndWhile
+			\State \Return $leafValue$ or $leafClass$
+			\EndProcedure
+		\end{algorithmic}
+	\end{algorithm}
+	\par In the standard implementation of Learn++.NSE, a classification problem is targeted, and it is supposed that an infinite number of learners can be created. The adjustment from classification to regression required the algorithm to use MSE instead of cross-entropy as an error function, and a method for limiting the number of learners was required as well.
+	\textbf{\textit{DISCUSS PRUNING}} 
 	\subsection {GANS, and evaluating the utility of them}
 	\par One of the major goals of the extension to the Cognitive Engine was to evaluate if the concept of Generative Adversarial Networks, or GANs, was applicable to the project. Like the cognitive engine in its current state, GANs are composed of two neural networks, providing complementary data. In this section, GANS will be described in more detail, as well as their applicability to the CE.  
-	\par The primary purpose of a Generative Adversarial Network is to implicitly model some probabilistic data distribution. Prior work has focused primarily on image-based data. Common data distributions to be modeled are MNIST (hand written digits), CIFAR-10 (natural images) and the Toronto Face Dataset (TFD) \cite{gan_overview}. These distributions happen to be all image-based, but there is no explicit need for the data distribution to be an image. 
+	\par The primary purpose of a Generative Adversarial Network is to implicitly model some probabilistic data distribution. Prior work has focused primarily on image-based data. Common data distributions to be modeled are MNIST (hand written digits), CIFAR-10 (natural images) and the Toronto Face Dataset (TFD) \cite{gan_overview}. These distributions happen to be all image-based, but there is no explicit need for the data distribution to be an image. Images just happen to be an extremely complicated representation space with many nonlinear patterns, making it a good data type for practice.
 	\par A GAN is composed of two sub-networks, a Generator($\mathcal{G}$) and a Discriminator($\mathcal{D}$). $\mathcal{G}$ and $\mathcal{D}$ are configured to be in competition. $\mathcal{D}$ is attempting to distinguish between points that are generated by $\mathcal{G}$ and points that are sampled from the true distribution. $\mathcal{D}$ returns a 0 if it thinks the datapoint is not from the true distribution, and a 1 if it thinks the datapoint is. $\mathcal{G}$ is attempting to fool $\mathcal{D}$ into confusing its generated datapoints with the data from the true distribution. Its best case scenario is that $\mathcal{D}$ is only correct around 50\% of the time, as this makes $\mathcal{D}$ only as good as chance.
 	\par In a more formal sense, $\mathcal{D}$ can be considered as dealing with a standard classification problem, attempting to classify whether or not a sample it is given is from the real distribution or the artificial one. $\mathcal{G}$ can be considered as dealing with a regression problem, trying to map a random uniform input $U(0,1)$ to the true distribution. Figure \ref{bg:fig_ganDiagram} shows an overview of the GAN architecture. $\mathcal{G}$, modeling a probability distribution, is more difficult than the task of the discriminator, $\mathcal{D}$, classification of incoming data. As such, when the discriminator ceases to improve, it is often frozen, and only $\mathcal{G}$ gets updated. 
 	\par The training of a GAN is based on a value function $V(\mathcal{G},\mathcal{D})$ that's dependent on both the generator and the discriminator. Training the GAN accomplishes the following: \textit{THIS NEEDS A BIT MORE}
@@ -234,14 +268,4 @@
 	\par On a surface level, the RLNN has some similarities to the GAN. Like a GAN, the RLNN uses two neural networks working in combination to produce different types of results. However, many of the similarities end here. The performance of the explore and exploit networks are not particularly related, as the performance of one doesn't indicate the performance of the other. Furthermore, neither the explore network nor the exploit network were developed as a classification problem. In order to make these networks fit the GAN structure, there would need to be a restructuring of the RLNN architecture.
 	\par Another potential way to use the GAN is in replacement of the explore or exploit network. The Explore network is the model that fits into the standard GAN formation. Indeed, it could be considered to be attempting a similar problem as $\mathcal{G}$. While there would be benefits of replacing the Explore network with a GAN, limitations of the experiment setup prevent doing so. The amount of samples required to properly train a GAN would likely be prohibitive, considering how difficult it is to schedule time to conduct experiments on the space-based platform. As a result of this, the conclusion is that GANs are not directly applicable to the SCaN testbed CE.
 	
-	\section{LINKS TO CITE}
-	\textbf{\textit{As much as possible, use IEEE peer-reviewed things.}}
-	https://ai.stanford.edu/~nilsson/MLBOOK.pdf INTRO TO ML \\
-	http://www.statsoft.com/Textbook/Classification-and-Regression-Trees CARTS\\
-	http://incompleteideas.net/book/bookdraft2017nov5.pdf  RL\\
-	https://towardsdatascience.com/machine-learning-fundamentals-via-linear-regression-41a5d11f5220 GRADIENT DESCENT \\
-	http://people.duke.edu/~hpgavin/ce281/lm.pdf LEVENBERG MARQUARDT \\
-	http://neuralnetworksanddeeplearning.com/chap2.html BACKPROP \\
-	http://web.engr.oregonstate.edu/~tgd/publications/mcs-ensembles.pdf ENSEMBLE LEARNING\\
-	https://arxiv.org/pdf/1710.07035.pdf GANSTUFF \\
-\end{document}
+%\end{document}

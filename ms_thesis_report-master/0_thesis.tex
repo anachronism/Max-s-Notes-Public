@@ -31,6 +31,8 @@
 
 % The preamble
 \documentclass[12pt]{report}
+\def\algbackskip{\hskip-\ALG@thistlm}
+
 
 % this enables correct linespacing and graphics inclusion via 
 %``\includegraphics''
@@ -45,18 +47,30 @@
 \usepackage{url}
 \usepackage{hyperref}
 \usepackage[toc]{glossaries}
+\usepackage{nomencl}
+\makenomenclature
 \usepackage[toc,page]{appendix}
 \usepackage{caption}
 \usepackage{amsmath} % Matrices
-\usepackage{subcaption}
+%\usepackage{subcaption}
 \usepackage{pdflscape}
 \usepackage{multirow}
 \usepackage{multicol}
 \usepackage[nottoc,numbib]{tocbibind}
+
+\usepackage[noend]{algpseudocode}
+\usepackage[margin=1.5in]{geometry}
+\usepackage{amsfonts}
+\usepackage{subfig}
+%\usepackage{subfloat}
+\usepackage{epstopdf}
+\usepackage[mathscr]{euscript}
+
 %Code settings:
 \usepackage{listings}
 \usepackage{color}
 \usepackage{pdfpages}
+\usepackage{algorithm}
 \usepackage{soul} %For highlighting, can remove later
 % Fix quotes
 \usepackage [english]{babel}
@@ -120,7 +134,7 @@
 		
 		{\large 
 			\textbf{
-				WAIT UNTIL THERE'S AN ACTUAL NAME
+				Extension on Adaptive MAC Protocol for Space Communications
 			}
 		}		
 		

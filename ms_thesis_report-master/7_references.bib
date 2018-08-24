@@ -1,6 +1,79 @@
 %% 07_bibliography:
 %  Currently populated with example citations from MQP, replace with actual citations.
 
+@BOOKLET{introToML,
+	TITLE = {Introduction to Machine Learning},
+	AUTHOR = {Nils J. Nilsson},
+	YEAR = {2005}, 
+	HOWPUBLISHED = {Web-published},
+}
+
+@BOOK{rlIntro,
+	TITLE = {Reinforcement Learning: An Introduction},
+	AUTHOR = {Richard S. Sutton and Andrew G. Barto},
+	YEAR = {2017}, 
+	PUBLISHER = {MIT Press},
+	EDITION = {Second}
+}
+
+@incollection{backpropIntro,
+	title = {How the backpropagation algorithm works},
+	author = {Michael A Nielsen},
+	crossref = {backpropBook},
+	chapter = {2},
+}
+
+@book{backpropBook,
+	TITLE = {Neural Networks and Deep Learning},
+	BOOKTITLE={Neural Networks and Deep Learning},
+	PUBLISHER = {Determination Press},
+	AUTHOR = {Michael A Nielsen},
+	YEAR = {2015},
+	
+}
+
+@inbook{cartIntro,
+	author      = {T. Hill and P. Lewicki},
+	title       = "Popular Decision Tree: Classification and Regression Trees (C\&RT)",
+	editor      = "",
+	booktitle   = "Electronic Statistics Textbook",
+	publisher   = "Statsoft, Inc.",
+	address     = "",
+	year        = 2013,
+	pages       = "",
+	chapter     = "9",
+}
+
+@inproceedings{rlmBasis,
+	abstract = "This paper proposes a recursive Levenberg-Marquardt (LM) search direction as the training algorithm for non-linear adaptive filters, which use multi-layer feed forward neural nets as the filter structures. The neural nets can be considered as a class of non-linear adaptive filters with transversal or recursive filter structures. In the off-line training, the LM method is regarded as an intermediate method between the steepest descent (SD) and Gauss-Newton (GN) methods, and it has better convergence properties than the other two methods. In the echo cancellation experiments, the recursive LM algorithm converges faster and gives higher echo return loss enhancement (ERLE) than the recursive SD and GN algorithms.",
+	author = "Ngia, L.S.H. and Sjoberg, J. and Viberg, M.",
+	isbn = "0780351487",
+	issn = "1058-6393",
+	journal = "Signals, Systems & Computers, 1998. Conference Record of the Thirty-Second Asilomar Conference on",
+	keywords = "Data- Och Informationsvetenskap ; Computer And Information Science ; Informationsteknik ; Information Technology;",
+	language = "eng",
+	pages = "697,701",
+	publisher = "IEEE Publishing",
+	title = "Adaptive neural nets filter using a recursive Levenberg-Marquardt search direction",
+	volume = "1",
+	year = "1998",
+}
+
+@inproceedings{rlmDetails,
+	abstract = "A novel decomposed recursive Levenberg Marquardt (RLM) algorithm is derived for the training of feedforward neural networks. By neglecting interneuron weight correlations the recently proposed RLM training algorithm can be decomposed at neuron level enabling weights to be updated in an efficient parallel manner. A separable least squares implementation of decomposed RLM is also introduced. Experiment results for two nonlinear time series problems demonstrate the superiority of the new training algorithms.",
+	author = "Asirvadam, V.S. and Mcloone, S.F. and Irwin, G.W.",
+	address = "USA",
+	isbn = "0-7803-7616-1",
+	journal = "Neural Networks for Signal Processing, 2002. Proceedings of the 2002 12th IEEE Workshop on",
+	keywords = "Computing and Processing ; Components, Circuits, Devices and Systems ; Signal Processing and Analysis",
+	language = "eng",
+	pages = "129,138",
+	publisher = "IEEE",
+	title = "Parallel and separable recursive Levenberg-Marquardt training algorithm",
+	volume = "2002-",
+	year = "2002",
+}
+
 %% PAPERS THAT are direct precedents.
 @INPROCEEDINGS{paulo_theory_paper, 
 author={P. V. R. Ferreira and R. Paffenroth and A. M. Wyglinski and T. M. Hackett and S. G. Bilén and R. C. Reinhart and D. J. Mortensen}, 
@@ -54,44 +127,65 @@ volume={},
 number={}, 
 pages={357-368}, 
 month={April},}
-% I-ELM
-@ARTICLE{1650244, 
-author={}, 
-journal={IEEE Transactions on Neural Networks}, 
-title={Universal approximation using incremental constructive feedforward networks with random hidden nodes}, 
-year={2006}, 
-volume={17}, 
-number={4}, 
-pages={879-892}, 
-keywords={learning (artificial intelligence);radial basis function networks;transfer functions;additive nodes;bounded nonconstant piecewise continuous functions;incremental constructive feedforward networks;integrable piecewise continuous functions;neural network theories;nondifferential activation functions;radial basis function hidden nodes;random hidden nodes;single-hidden-layer feedforward networks;threshold networks;universal approximation;Artificial neural networks;Automatic control;Feedforward neural networks;Function approximation;Helium;Joining processes;Machine learning;Neural networks;Radial basis function networks;Support vector machines;Ensemble;feedforward network;incremental extreme learning machine;radial basis function;random hidden nodes;support vector machine;threshold network;universal approximation}, 
-doi={10.1109/TNN.2006.875977}, 
-ISSN={1045-9227}, 
-month={July},}
 
-@article{inc_oselm,
-title = "An incremental extreme learning machine for online sequential learning problems",
-journal = "Neurocomputing",
-volume = "128",
-pages = "50 - 58",
-year = "2014",
-issn = "0925-2312",
-doi = "https://doi.org/10.1016/j.neucom.2013.03.055",
-url = "http://www.sciencedirect.com/science/article/pii/S0925231213010059",
-author = "Lu Guo and Jing-hua Hao and Min Liu",
-keywords = "Incremental learning algorithm, Extreme learning machine (ELM), Incremental ELM (IELM), Online sequential ELM (OS-ELM), Fixed size LSSVM (FS-LSSVM)"
+@article{empericalCatForget,
+	abstract = {Catastrophic forgetting is a problem faced by many machine learning models and algorithms. When trained on one task, then trained on a second task, many machine learning models "forget" how to perform the first task. This is widely believed to be a serious problem for neural networks. Here, we investigate the extent to which the catastrophic forgetting problem occurs for modern neural networks, comparing both established and recent gradient-based training algorithms and activation functions. We also examine the effect of the relationship between the first task and the second task on catastrophic forgetting. We find that it is always best to train using the dropout algorithm--the dropout algorithm is consistently best at adapting to the new task, remembering the old task, and has the best tradeoff curve between these two extremes. We find that different tasks and relationships between tasks result in very different rankings of activation function performance. This suggests the choice of activation function should always be cross-validated.},
+	author = "Goodfellow, Ian J. and Mirza, Mehdi and Xiao, Da and Courville, Aaron and Bengio, Yoshua",
+	keywords = "Statistics - Machine Learning ; Computer Science - Learning ; Computer Science - Neural And Evolutionary Computing",
+	title = "An Empirical Investigation of Catastrophic Forgetting in Gradient-Based Neural Networks",
+	year = "2013-12-21",
 }
 
-https://arxiv.org/pdf/1312.6211.pdf
-Emperical investigation of catastrophic forgetting.
-https://pdfs.semanticscholar.org/f915/4ce80aff79c9ad4106344fcd0c3d1fb0e915.pdf
-A look at how orthogonalizing hidden layer weights impacts  a slfn
-http://www.ntu.edu.sg/home/egbhuang/pdf/ELM-Randomness-Kernel.pdf
-Insight into ELMS
+@inproceedings{mlEnsemble,
+	address = "Berlin ;",
+	booktitle = "Multiple classifier systems : first international workshop, MCS 2000, Cagliari, Italy, June 21-23, 2000 : proceedings",
+	isbn = "3540677046",
+	keywords = "Machine learning",
+	language = "eng",
+	lccn = "00044679",
+	publisher = "Springer",
+	series = "Lecture notes in computer science, 1857",
+	title = "Multiple classifier systems : first international workshop, MCS 2000, Cagliari, Italy, June 21-23, 2000 : proceedings ",
+	year = "2000",
+}
+
+
+@article{ganReview,
+	abstract = {Generative adversarial networks (GANs) provide a way to learn deep representations without extensively annotated training data. They achieve this by deriving backpropagation signals through a competitive process involving a pair of networks. The representations that can be learned by GANs may be used in a variety of applications, including image synthesis, semantic image editing, style transfer, image superresolution, and classification. The aim of this review article is to provide an overview of GANs for the signal processing community, drawing on familiar analogies and concepts where possible. In addition to identifying different methods for training and constructing GANs, we also point to remaining challenges in their theory and application.},
+	author = "Creswell, Antonia and White, Tom and Dumoulin, Vincent and Arulkumaran, Kai and Sengupta, Biswa and Bharath, Anil A.",
+	address = "USA",
+	issn = "1053-5888",
+	journal = "Signal Processing Magazine, IEEE",
+	keywords = "Machine Learning ; Generators ; Training Data ; Data Models ; Convolutional Codes ; Image Resolution ; Signal Resolution ; Semantics ; Signal Processing and Analysis",
+	language = "eng",
+	number = "1",
+	pages = "53,65",
+	publisher = "IEEE",
+	title = "Generative Adversarial Networks: An Overview",
+	volume = "35",
+	year = "2018-01",
+}
+
 ---------------------
-Adaptive Neural Nets Filter Using a Recursive Levenberg-Marquardt Search Direction 
-Parallel and Separable Recursive LevenbergMarquardt Training Algorithm
-OS-ELM
-Learn++.NSE, Incremental learning in nonstationary environments with controlled forgetting.
+https://towardsdatascience.com/machine-learning-fundamentals-via-linear-regression-41a5d11f5220 GRADIENT DESCENT \\
+http://people.duke.edu/~hpgavin/ce281/lm.pdf LEVENBERG MARQUARDT \\
+Paper on adaboost R2
+Paper on pruning trees, have print copy.
+
+% ENSEMBLE THINGS
+
+@inproceedings{learnNseIntro,
+	abstract = "We have recently introduced an incremental learning algorithm, called Learn++.NSE, designed for Non-Stationary Environments (concept drift), where the underlying data distribution changes over time. With each dataset drawn from a new environment, Learn++.NSE generates a new classifier to form an ensemble of classifiers. The ensemble members are combined through a dynamically weighted majority voting, where voting weights are determined based on classifiers' age-adjusted accuracy on current and past environments. Unlike other ensemble-based concept drift algorithms, Learn++.NSE does not discard prior classifiers, allowing potentially cyclical environments to be learned more effectively. While Learn++.NSE has been shown to work well on a variety of concept drift problems, a potential shortcoming of this approach is the cumulative nature of the ensemble size. In this contribution, we expand our analysis of the algorithm to include various ensemble pruning methods to introduce controlled forgetting. Error or age-based pruning methods have been integrated into the algorithm to prevent potential out-voting from irrelevant classifiers or simply to save memory over an extended period of time. Here, we analyze the tradeoff between these precautions and the desire to handle recurring contexts (cyclical data). Comparisons are made using several scenarios that introduce various types of drift.",
+	author = "Elwell, Ryan and Polikar, Robi",
+	isbn = "9781424435487",
+	issn = "1098-7576",
+	journal = "Neural Networks, 2009. IJCNN 2009. International Joint Conference on",
+	language = "eng",
+	pages = "771,778",
+	publisher = "IEEE Publishing",
+	title = "Incremental learning in nonstationary environments with controlled forgetting",
+	year = "2009-06",
+}
 
 @INPROCEEDINGS{1007781, 
 author={R. Polikar and J. Byorick and S. Krause and A. Marino and M. Moreton}, 
