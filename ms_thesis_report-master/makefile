@@ -15,17 +15,22 @@ endif
 	pdflatex -output-directory=build 0_thesis
 ifeq ($(OS),Windows_NT)
 	del thesis.pdf
-	move .\build\0_thesis.pdf thesis.pdf
+	copy build\0_thesis.pdf thesis.pdf
 else
 	mv build/0_thesis.pdf thesis.pdf
 	open thesis.pdf
 endif
-	echo "Done."	
+	echo Done.	
 
 
 rebuild: clean report
 
 clean:
+ifeq ($(OS),Windows_NT)
+	del thesis.pdf
+	del build\*
+else
 	rm -f thesis.pdf
 	rm -rf build
 	mkdir build
+endif
