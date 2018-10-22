@@ -113,6 +113,9 @@
 		\end{algorithmic}
 	\end{algorithm}
 	\par The symbol $\odot$ is the Hadamard Product, which is an element-wise product of two vectors with the same length. $L$ is the number of layers in the MLP. $z^l$ is the weight and bias values at layer $l$, and $a^l$ is $z^l$ passed through the activation function $\sigma(z)$. $\delta^l$ is the error at layer $l$.
+	\par The backpropegation algorithm used in MLPs can be broken into 4 steps: forward propegation, backpropegation at the last layer, backpropegation at the hiden layers, and updating of the weights. 
+	Forward propegation is simply applying the training inputs to the network as normal (represented by steps 2-6). Then, the backpropegation error at the output is calculated (step 7). Then, the error is carried back through the network in the same way that the MLP is applied, except backwards. Once this is done, the partial derivatives of each node will be calculated, and can be used in a gradient descent manner.
+
 	\par https://page.mi.fu-berlin.de/rojas/neural/chapter/K7.pdf Link to chapter that discusses backprop
 	\par \textbf{\textit{ EXPLAIN THIS IN MUCH MORE DETAIL LOL}}
 	\subsection{Reinforcement Learning}
@@ -218,19 +221,50 @@
 	\textbf{\textit{Don't forget to cite cart in this bg section \cite{cartIntro}}}
 	\par A different approach to deal with Catastrophic Forgetting is to use ensemble training methods. Ensemble methods use a collection of learners to produce improved results over any individual learner by itself. In general, ensemble methods use a set of weaker algorithms that are combined with or without some sort of weighting to produce a unified result. In classification problems a weighted majority voting is often used, while in regression problems a weighted median or mean is often used. Frequently, a CART is used as the base algorithm, due to its simple implementation and reasonable performance. However, any algorithm can be selected. Once a base algorithm is chosen, the difference between ensemble implementations is how the ensemble is created and used. For instance, in Adaboost, a series of base learners is trained, with each successive base learner trained in a way that more heavily weights points that the previously trained learners have trouble with. This differs from bagging, a different algorithm where each base learner is trained with a different subset of the total training data. These examples are provided simply to show how ensemble learning methods can differ.
 	\par The method most relevant to addressing the problem of catastrophic forgetting is Learn++.NSE. For each window of samples, Learn++.NSE creates a new learner, trained on the window. The samples in the training window are weighted by how much trouble the pre-existing learners had in predicting the value, ensuring that the new learner is better at recognizing these samples. It then weights the new learner and existing learners based on how well they work on the training data, using a metric such as MSE. In doing this, existing learners contribute to the resulting prediction based on how well they work on the most recent window of data. 
-	\textbf{\textit{PUT ACTUAL PSEUDOALGORITHM HERE, THEN EXPLAIN}}
 		\begin{algorithm}[ht]
-		\caption{CART Pseudoalgorithm}
-		\label{code:bg_cart}
+		\caption{Learn.NSE++ Pseudoalgorithm}
+		\label{code:bg_nse}
 		\begin{algorithmic}[1]
-			\Procedure{CART}{}
-			\While{$leafNotReached$}
-			\State $x = x_{eval} \in X$
-			\If {$x > \textit{branchValue}$} Branch right.
-			\Else \ Branch left.
+			\Procedure{Learn.NSE++}{}
+			\State $t=1,\ numActiveClassifiers = 0$ 
+			\State $m^t$ is the data window size at epoch t.
+			\While{Running}
+			\If{$t = 1$} 
+			\For{$i=1 \to numActiveClassifiers$}
+			\State $D(i) = w(i) = 1/m^1$
+			\EndFor
+			\Else
+			\State Apply data window to current ensemble. 
+			\State $E^t = \sum^{m^t}(1/m^t) * squaredError($current learner, current data$)$
+			\State At this point, $E^t$ should be a vector with size $m^t$.
+			\For{$i = 1,i<numActiveClassifiers, i++$}
+			\State Update learner weights: $w_i = 1/m^t * \sum squaredError($current learner, current data$)$
+			\EndFor
+			\State Normalize learner weights: $D = w \odot (1/\sum w)$
 			\EndIf
+			\If{ $numActiveClassifiers = numClassifiers$}
+			\State Remove oldest classifier.
+			\Else
+			 $numActiveClassifiers = numActiveClassifiers + 1$
+			\EndIf
+			\State Train new Learner on new data window.
+			\State Evaluate all existing classifiers with new data.
+			\For{$i=1 \to numClassifiers$}
+			\State $\epsilon_i^t = \sum D(i) * squaredError($ current learner, current data$)$
+			\State $\beta_i^t = \epsilon_i^t/(1-\epsilon_k^t) $
+			\State Compute average of normalized error for $h_i$: $\omega_i^t = 1/(1+exp(-a(t-i-b)))$
+			\State $\omega_i^t = \omega_i^t / \sum_{j=0}^{t-i} \omega_i^{t-j}$
+			\State $\hat{\beta_i^t} = \sum_{j=0}^{t-i} \omega_k^{t-j} \beta_i^{t-j}$
+			\If{$t>numClassifiers$} 
+			\State Calculate classifier voting weights $W_i^t = log(1/\hat{\beta_i^t})$
+			\EndIf
+			\EndFor
+			\State Training Done.
+			\While{Filling training buffer}
+			\State get Hypothesis $H(x) =\sum_{i=0}^{numClassifiers} W_i^t * h_i(x) $
 			\EndWhile
-			\State \Return $leafValue$ or $leafClass$
+			\State Buffer full, $t += 1$.
+			\EndWhile
 			\EndProcedure
 		\end{algorithmic}
 	\end{algorithm}
