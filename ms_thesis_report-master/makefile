@@ -1,5 +1,7 @@
 
 
+rebuild: clean report
+
 report:
 	pdflatex -output-directory=build 0_thesis
 ifeq ($(OS),Windows_NT)
@@ -8,9 +10,11 @@ ifeq ($(OS),Windows_NT)
 else
 	cp 7_references.bib build
 endif	
-	cd build 
-	bibtex 0_thesis
+	cd .\build &&  bibtex 0_thesis
+
+ifneq ($(OS),Windows_NT)
 	cd ../
+endif
 	pdflatex -output-directory=build 0_thesis
 	pdflatex -output-directory=build 0_thesis
 ifeq ($(OS),Windows_NT)
@@ -22,13 +26,10 @@ else
 endif
 	echo Done.	
 
-
-rebuild: clean report
-
 clean:
 ifeq ($(OS),Windows_NT)
-	del thesis.pdf
-	del build\*
+	del /Q thesis.pdf
+	del /Q build\* 
 else
 	rm -f thesis.pdf
 	rm -rf build

@@ -1,5 +1,291 @@
-%% 07_bibliography:
+%%% 07_bibliography:
 %  Currently populated with example citations from MQP, replace with actual citations.
+
+%% Citations from other papers
+% Tim's Citations
+
+
+@inproceedings{tim2,
+abstract = "This tutorial presents how software defined radio can be implemented in the space segment, especially for telecommunication applications, detailing applications and functionalities suited to such kind of technology, the reconfigurable hardware/software devices applicable in space, the methodology of reconfiguration and the payload architectures",
+author = "Morlet, C.",
+isbn = "1424401186",
+journal = "Satellite and Space Communications, 2006 International Workshop on",
+keywords = "Communication, Networking and Broadcast Technologies ; Aerospace",
+language = "eng",
+pages = "269,270",
+publisher = "IEEE",
+title = "Software radio in space segment: applications, technologies, reconfiguration management and architectures",
+year = "2006-09"
+}
+
+% Paulo's Citations
+@article{paulo5,
+author = "David Silver and Aja Huang and Chris J. Maddison and Arthur Guez and Laurent Sifre and George Van Den Driessche and Julian Schrittwieser and Ioannis Antonoglou and Veda Panneershelvam and Marc Lanctot and Sander Dieleman and Dominik Grewe and John Nham and Nal Kalchbrenner and Ilya Sutskever and Timothy Lillicrap and Madeleine Leach and Koray Kavukcuoglu and Thore Graepel and Demis Hassabis",
+issn = "0028-0836",
+journal = "Nature",
+keywords = "Monte Carlo Methods -- Analysis ; Artificial Neural Networks -- Analysis;",
+number = "7587",
+pages = "484-489",
+publisher = "Nature Publishing Group",
+title = "Mastering the game of Go with deep neural networks and tree search",
+volume = "529",
+year = "2016-01-27"
+}
+
+@misc{paulo6,
+  author = {Andrew Silver},
+  title = {Luxembourg invests (euro)25 million in Asteroid Mining},
+  year = 2016,
+  howpublished = {\url{https://spectrum.ieee.org/tech-talk/aerospace/space-flight/luxembourg-invests-25-million-in-asteroid-mining}},
+  note = {Accessed: 2018-11-15}
+}
+
+@article{paulo17,
+abstract = "We apply coset codes to adaptive modulation in fading channels. Adaptive modulation is a powerful technique to improve the energy efficiency and increase the data rate over a fading channel. Coset codes are a natural choice to use with adaptive modulation since the channel coding and modulation designs are separable. Therefore, trellis and lattice codes designed for additive white Gaussian noise (AWGN) channels can be superimposed on adaptive modulation for fading channels, with the same approximate coding gains. We first describe the methodology for combining coset codes with a general class of adaptive modulation techniques. We then apply this methodology to a spectrally efficient adaptive M-ary quadrature amplitude modulation (MQAM) to obtain trellis-coded adaptive MQAM. We present analytical and simulation results for this design which show an effective coding gain of 3 dB relative to uncoded adaptive MQAM for a simple four-state trellis code, and an effective 3.6-dB coding gain for an eight-state trellis code. More complex trellis codes are shown to achieve higher gains. We also compare the performance of trellis-coded adaptive MQAM to that of coded modulation with built-in time diversity and fixed-rate modulation. The adaptive method exhibits a power savings of up to 20 dB.",
+author = "Goldsmith, A.J. and Chua, S.-G.",
+address = "USA",
+issn = "0090-6778",
+journal = "Communications, IEEE Transactions on",
+keywords = "Communication, Networking and Broadcast Technologies",
+language = "eng",
+number = "5",
+pages = "595,602",
+publisher = "IEEE",
+title = "Adaptive coded modulation for fading channels",
+volume = "46",
+year = "1998-05"
+}
+@inproceedings{paulo18,
+abstract = "In the last years we are seeing the increasing presence of multimedia applications together with a wide variety of terminals, from the PCs to the notebooks, from the smartphones to the tablets. In order to exploit such advanced services, ubiquitous and broadband connections are required. While urban or suburban areas can be covered by using terrestrial wireless broadband networks, there are several rural or low populated areas with narrowband access. To this aim, satellite community has developed in the last years two communications standards specifically suited for mobile communications, i.e., DVB-SH and DVB-RCS NG. Among others they consider adaptive waveforms techniques for increasing the system reliability and throughput aiming to exploit the variable channel behavior. Adaptive coding and modulation (ACM) belongs to this family of algorithms, by adapting the modulation and coding scheme based on the channel behavior. In this paper we focus on a state adaptive algorithm suited for mobile applications.",
+author = "Tarchi, Daniele and Corazza, Giovanni E. and Vanelli-Coralli, Alessandro",
+isbn = "978-1-4673-3122-7",
+issn = "1550-3607",
+journal = "Communications (ICC), 2013 IEEE International Conference on",
+keywords = "Signal Processing and Analysis",
+language = "eng",
+pages = "4504,4508",
+publisher = "IEEE",
+title = "Adaptive coding and modulation techniques for next generation hand-held mobile satellite communications",
+year = "2013-06"
+}
+@inproceedings{paulo19,
+abstract = "German aerospace center (DLR), Fraunhofer FOKUS.cats, and Tesat-Spacecom have designed a future multimedia ATM-based LEO satellite network. Part of the development was an adaptive MAC and FEC scheme which is presented in this paper. The FEC implementation switches on the fly during a connection between several FEC and modulation modes to guarantee a maximum ATM cell error rate of 10/sup -6/. In order to prevent influences of the changing FEC scheme on the user-level data rate, the MAC dynamically changes its packet lengths. Additionally, to minimize contention on the up-link, the MAC structures its TDMA frame into a fixed assigned part and a contention specific part. The boarder in between the two is dynamically altered according to the current link utilization.",
+author = "Emmelmann, M. and Bischl, H.",
+address = "USA",
+isbn = "0780379543",
+issn = "1090-3038",
+journal = "Vehicular Technology Conference, 2003. VTC 2003-Fall. 2003 IEEE 58th",
+keywords = "Transportation",
+language = "eng",
+pages = "2698,2702",
+publisher = "IEEE",
+title = "An adaptive MAC layer protocol for ATM-based LEO satellite networks",
+volume = "4",
+year = "2003"
+}
+% These standards have weird thigns with capitalizations.
+@techreport{paulo21,
+  type = {Standard},
+  author = {European Telecommunications Standards Institute},
+  title = {ETSI EN 302 307-1: Digital Video Broadcasting (DVB); Second generation framing structure, channel coding and modulation systems for Broadcasting, Interactive Services, News Gathering and other broadband satellite applications; Part 1: DVB-S2},
+  institution={European Telecommunications Standards Institute},
+  year = 2014
+}
+@techreport{paulo22,
+  type = {Standard},
+  author = {European Telecommunications Standards Institute},
+  title = {ETSI EN 302 307-2: Digital Video Broadcasting (DVB); Second generation framing structure, channel coding and modulation systems for Broadcasting, Interactive Services, News Gathering and other broadband satellite applications; Part 2: DVB-S2 Extensions (DVB-S2X)},
+  institution={European Telecommunications Standards Institute},
+  year = 2014
+}
+@book{paulo39,
+author = "Kurose, James F.",
+address = "Boston",
+booktitle = "Computer networking : a top-down approach",
+edition = "5th ed.",
+isbn = "0136079679",
+keywords = "Internet",
+language = "eng",
+lccn = "2009007271",
+publisher = "Addison-Wesley",
+title = "Computer networking : a top-down approach ",
+year = "2010"
+}
+
+@inproceedings{paulo40,
+abstract = "Genetic algorithms are well suited for optimization problems involving large search spaces. In this paper, we present several approaches designed to enhance the convergence time and/or improve the performance results of genetic algorithm-based search engine for cognitive radio networks, including techniques such as population adaptation, variable quantization, variable adaptation, and multi-objective genetic algorithms (MOGA). Note that the time required for a genetic algorithm to reach a decent solution substantially increases with system complexity, and thus techniques are needed that will help facilitate achieving adequate results over a short period of time.",
+author = "Chen, Si and Newman, Timothy R. and Evans, Joseph B. and Wyglinski, Alexander M.",
+isbn = "9781424455928",
+journal = "Sarnoff Symposium, 2010 IEEE",
+language = "eng",
+pages = "1,6",
+publisher = "IEEE Publishing",
+title = "Genetic algorithm-based optimization for cognitive radio networks",
+year = "2010-04"
+}
+@article{paulo41,
+abstract = "The cognitive radio (CR) paradigm for designing next‐generation wireless communications systems is becoming increasingly popular, and different aspects of it are being implemented in currently available wireless systems. In the last decade, a significant amount of research efforts has been made to solve CR challenges, and several standards related to CR and dynamic spectrum access have been developed. Also, there have been advances in software‐defined radio platforms to implement the CR systems. In this article, we provide a comprehensive survey on the evolution of CR research covering aspects such as spectrum sensing, measurements and statistical modeling of spectrum usage, physical layer aspects such as waveform and modulation design, multiple access, resource allocation and power control, cognitive learning, adaptation and self‐configuration, multihop transmission and routing, and robustness and security in CR networks. Also, state‐of‐the‐art research on the economics of CR networks, CR simulation tools, testbeds and hardware prototypes, CR applications, and CR standardization efforts is summarized. Emerging trends on CR research and open research challenges related to the cost‐effective and large‐scale deployment of CR systems are outlined. Copyright © 2013 John Wiley & Sons, Ltd. We provide a comprehensive survey on the evolution of cognitive radio research covering aspects such as spectrum sensing, measurements and statistical modeling of spectrum usage, waveform and modulation design, multiple access, radio resource management, cognitive learning, adaptation and self‐configuration, multihop transmission and routing, and robustness and security. Also, state‐of‐the‐art research on the economics of cognitive radio networks, cognitive radio simulation tools, testbeds and hardware prototypes, cognitive radio applications, and cognitive radio standardization efforts is summarized.",
+author = "Hossain, Ekram and Niyato, Dusit and Kim, Dong In",
+address = "Chichester, UK",
+issn = "1530-8669",
+journal = "Wireless Communications and Mobile Computing",
+keywords = "Cognitive Radio ; Dynamic Spectrum Access ; Software‐Defined Radio",
+number = "11",
+pages = "1530,1564",
+publisher = "John Wiley & Sons, Ltd",
+title = "Evolution and future trends of research in cognitive radio: a contemporary survey",
+volume = "15",
+year = "2015-08-10"
+}
+@article{paulo42,
+abstract = "Cognitive radio (CR) is an enabling technology for numerous new capabilities such as dynamic spectrum access, spectrum markets, and self-organizing networks. To realize this diverse set of applications, CR researchers leverage a variety of artificial intelligence (AI) techniques. To help researchers better understand the practical implications of AI to their CR designs, this paper reviews several CR implementations that used the following AI techniques: artificial neural networks (ANNs), metaheuristic algorithms, hidden Markov models (HMMs), rule-based systems, ontology-based systems (OBSs), and case-based systems (CBSs). Factors that influence the choice of AI techniques, such as responsiveness, complexity, security, robustness, and stability, are discussed. To provide readers with a more concrete understanding, these factors are illustrated in an extended discussion of two CR designs.",
+author = "He, An and Kyung Kyoon Bae, Timothy R and Newman, Joseph and Gaeddert, Rekha and Kyouwoong Kim, Lizdabel and Menon, James Jody and Morales-Tirado, Jeffrey H and Neel, William H and Youping Zhao, William H and Reed, William H and Tranter, William H",
+address = "USA",
+issn = "0018-9545",
+journal = "Vehicular Technology, IEEE Transactions on",
+keywords = "Transportation ; Aerospace",
+language = "eng",
+number = "4",
+pages = "1578,1592",
+publisher = "IEEE",
+title = "A Survey of Artificial Intelligence for Cognitive Radios",
+volume = "59",
+year = "2010-05"
+}
+@article{paulo45,
+abstract = "In this survey paper, we characterize the learning problem in cognitive radios (CRs) and state the importance of artificial intelligence in achieving real cognitive communications systems. We review various learning problems that have been studied in the context of CRs classifying them under two main categories: Decision-making and feature classification. Decision-making is responsible for determining policies and decision rules for CRs while feature classification permits identifying and classifying different observation models. The learning algorithms encountered are categorized as either supervised or unsupervised algorithms. We describe in detail several challenging learning issues that arise in cognitive radio networks (CRNs), in particular in non-Markovian environments and decentralized networks, and present possible solution methods to address them. We discuss similarities and differences among the presented algorithms and identify the conditions under which each of the techniques may be applied.",
+author = "Bkassiny, Mario and Yang Li, Sudharman K. and Jayaweera, Sudharman K.",
+address = "USA",
+issn = "1553-877X",
+journal = "Communications Surveys \& Tutorials, IEEE",
+keywords = "Communication, Networking and Broadcast Technologies",
+language = "eng",
+number = "3",
+pages = "1136,1159",
+publisher = "IEEE",
+title = "A Survey on Machine-Learning Techniques in Cognitive Radios",
+volume = "15",
+year = "2013"
+}
+@inproceedings{paulo47,
+abstract = "We propose adding a vigilante player and using non-traditional game strategy for decision making to improve the performance of a cognitive radio network. To date, the application to cognitive radio networks of a hybrid player such as a vigilante, which is both cooperative and non- cooperative, has not been significantly studied. We use a novel play strategy (i.e., altruism) to police a wireless network. Using this new player, we present and test a series of predictive algorithms that show an improvement in wireless channel utilization over traditional collision- detection algorithms. Our results demonstrate the viability of using this novel strategy to inform and create more efficient cognitive radio networks.",
+author = "Kotobi, Khashayar and Bilen, Sven G.",
+isbn = "9781479980918",
+journal = "Vehicular Technology Conference (VTC Fall), 2015 IEEE 82nd",
+keywords = "Throughput ; Cognitive Radio ; Games ; Nash Equilibrium ; Mathematical Model ; Computer Science ; Aerospace ; Communication, Networking and Broadcast Technologies ; Components, Circuits, Devices and Systems ; Computing and Processing ; Fields, Waves and Electromagnetics ; Photonics and Electrooptics ; Power, Energy and Industry Applications ; Signal Processing and Analysis ; Transportation",
+language = "eng",
+pages = "1,2",
+publisher = "IEEE",
+title = "Introduction of Vigilante Players in Cognitive Networks with Moving Greedy Players",
+year = "2015-09"
+}
+@book{paulo48,
+abstract = "Cooperative and Cognitive Satellite Systems provides a solid overview of the current research in the field of cooperative and cognitive satellite systems, helping users understand how to incorporate state-of-the-art communication techniques in innovative satellite network architectures to enable the next generation of satellite systems.    The book is edited and written by top researchers and practitioners in the field, providing a comprehensive explanation of current research that allows users to discover future technologies and their applications, integrate satellite and terrestrial systems",
+author = "Chatzinotas, Symeon.",
+address = "Amsterdam, [Netherlands]",
+booktitle = "Cooperative and cognitive satellite systems",
+isbn = "0-12-800191-7",
+keywords = "Artificial satellites in telecommunication",
+language = "eng",
+publisher = "Academic Press",
+title = "Cooperative and cognitive satellite systems ",
+year = "2015"
+}
+@inproceedings{paulo50,
+abstract = "In this work we investigate an auction mechanism for sharing available wireless bandwidth among competing cognitive radios. The bandwidth under consideration may be either in an unlicensed spectrum or in an unused licensed band. Spectrum sharing is achieved via a mechanism in which a cognitive radio acting as the auctioneer advertises spectrum availability to bidding cognitive radios and defines a puzzle to solve as a method to access it. The cognitive radios act as bidders by computing the solution to the problem (i.e., the &#x201C;puzzle&#x201D;). The winner is the bidder who submits the first correct bid and thus gains access to the spectrum for the next time interval. We consider two different variances of our scheme based on parallelizable and non-parallelizable problems and demonstrate that the latter provides a fair auction in contrast to the former. We propose a verification database to counter malicious &#x201C;greedy&#x201D; players. Our algorithm provides a centralized, easy-to-implement, and computationally fast multiple-access scheme that is verifiable by all participating cognitive radios.",
+author = "Kotobi, Khashayar and Mainwaring, Philip B. and Bilen, Sven G.",
+isbn = "9781509007240",
+journal = "Wireless and Mobile Computing, Networking and Communications (WiMob), 2016 IEEE 12th International Conference on",
+keywords = "Cognitive Radio ; Wireless Sensor Networks ; Electronic Mail ; Sensors ; Bandwidth ; Databases ; Communication, Networking and Broadcast Technologies ; Signal Processing and Analysis ; Transportation",
+language = "eng",
+pages = "1,6",
+publisher = "IEEE",
+title = "Puzzle-based auction mechanism for spectrum sharing in cognitive radio networks",
+year = "2016-10"
+}
+
+
+
+%
+@book{gauss_newton_alg,
+  title={Numerical methods for least squares problems},
+  author={Bjorck, Ake},
+  volume={51},
+  year={1996},
+  publisher={Siam}
+}
+@incollection{lm_alg,
+author = "Yu, H. and Wilamowski, B.M.",
+booktitle = "Intelligent Systems",
+copyright = "Copyright 2018 Elsevier B.V., All rights reserved.",
+isbn = "9781439802847",
+publisher = "CRC Press",
+title = "Levenberg-marquardt training",
+year = "2016-04-19"
+}
+@book{SDRTextbook,
+abstract = "Software defined radio (SDR) is a hot topic in the telecommunications field, with regard to wireless technology. It is one of the most important topics of research in the area of mobile and personal communications. SDR is viewed as the enabler of global roaming and a platform for the introduction of new technologies and services into existing live networks. It therefore gives networks a greater flexibility into mobile communications. It bridges the inter-disciplinary gap in the field as SDR covers two areas of development, namely software development and digital signal processing and the inter",
+address = "Hoboken, NJ",
+booktitle = "Software defined radio architectures, systems, and functions",
+isbn = "1-280-27650-9",
+keywords = "Software radio",
+language = "eng",
+publisher = "Wiley",
+series = "Wiley series in software radio",
+title = "Software defined radio architectures, systems, and functions ",
+year = "2003"
+}
+
+@Article{MLSurvey_networking,
+author="Boutaba, Raouf
+and Salahuddin, Mohammad A.
+and Limam, Noura
+and Ayoubi, Sara
+and Shahriar, Nashid
+and Estrada-Solano, Felipe
+and Caicedo, Oscar M.",
+title="A comprehensive survey on machine learning for networking: evolution, applications and research opportunities",
+journal="Journal of Internet Services and Applications",
+year="2018",
+month="Jun",
+day="21",
+volume="9",
+number="1",
+pages="16",
+abstract="Machine Learning (ML) has been enjoying an unprecedented surge in applications that solve problems and enable automation in diverse domains. Primarily, this is due to the explosion in the availability of data, significant improvements in ML techniques, and advancement in computing capabilities. Undoubtedly, ML has been applied to various mundane and complex problems arising in network operation and management. There are various surveys on ML for specific areas in networking or for specific network technologies. This survey is original, since it jointly presents the application of diverse ML techniques in various key areas of networking across different network technologies. In this way, readers will benefit from a comprehensive discussion on the different learning paradigms and ML techniques applied to fundamental problems in networking, including traffic prediction, routing and classification, congestion control, resource and fault management, QoS and QoE management, and network security. Furthermore, this survey delineates the limitations, give insights, research challenges and future opportunities to advance ML in networking. Therefore, this is a timely contribution of the implications of ML for networking, that is pushing the barriers of autonomic network operation and management.",
+issn="1869-0238",
+doi="10.1186/s13174-018-0087-2",
+url="https://doi.org/10.1186/s13174-018-0087-2"
+}
+
+@article{MLSurvey_medImage,
+abstract = "•A summary of all deep learning algorithms used in medical image analysis is given.•The most successful algorithms for key image analysis tasks are identified.•300 papers applying deep learning to different applications have been summarized. Deep learning algorithms, in particular convolutional networks, have rapidly become a methodology of choice for analyzing medical images. This paper reviews the major deep learning concepts pertinent to medical image analysis and summarizes over 300 contributions to the field, most of which appeared in the last year. We survey the use of deep learning for image classification, object detection, segmentation, registration, and other tasks. Concise overviews are provided of studies per application area: neuro, retinal, pulmonary, digital pathology, breast, cardiac, abdominal, musculoskeletal. We end with a summary of the current state-of-the-art, a critical discussion of open challenges and directions for future research.",
+author = "Litjens, Geert and Kooi, Thijs and Bejnordi, Babak Ehteshami and Setio, Arnaud Arindra Adiyoso and Ciompi, Francesco and Ghafoorian, Mohsen and van Der Laak, Jeroen A.W.M. and van Ginneken, Bram and SáNchez, Clara I.",
+issn = "1361-8415",
+journal = "Medical Image Analysis",
+keywords = "Deep Learning ; Convolutional Neural Networks ; Medical Imaging ; Survey",
+language = "eng",
+number = "C",
+pages = "60,88",
+publisher = "Elsevier B.V.",
+title = "A survey on deep learning in medical image analysis",
+volume = "42",
+year = "2017-12"
+}
+@article{MLSurvey_general,
+abstract = "Since the proposal of a fast learning algorithm for deep belief networks in 2006, the deep learning techniques have drawn ever-increasing research interests because of their inherent capability of overcoming the drawback of traditional algorithms dependent on hand-designed features. Deep learning approaches have also been found to be suitable for big data analysis with successful applications to computer vision, pattern recognition, speech recognition, natural language processing, and recommendation systems. In this paper, we discuss some widely-used deep learning architectures and their practical applications. An up-to-date overview is provided on four deep learning architectures, namely, autoencoder, convolutional neural network, deep belief network, and restricted Boltzmann machine. Different types of deep neural networks are surveyed and recent progresses are summarized. Applications of deep learning techniques on some selected areas (speech recognition, pattern recognition and computer vision) are highlighted. A list of future research topics are finally given with clear justifications.",
+author = "Liu, Weibo and Wang, Zidong and Liu, Xiaohui and Zeng, Nianyin and Liu, Yurong and Alsaadi, Fuad E.",
+issn = "0925-2312",
+journal = "Neurocomputing",
+keywords = "Autoencoder ; Convolutional Neural Network ; Deep Learning ; Deep Belief Network ; Restricted Boltzmann Machine",
+language = "eng",
+number = "C",
+pages = "11,26",
+publisher = "Elsevier B.V.",
+title = "A survey of deep neural network architectures and their applications",
+volume = "234",
+year = "2017-04-19"
+}
 
 @BOOKLET{introToML,
 	TITLE = {Introduction to Machine Learning},
@@ -7,6 +293,19 @@
 	YEAR = {2005}, 
 	HOWPUBLISHED = {Web-published},
 }
+
+@ARTICLE{deepLearningSurvey, 
+author={W. G. Hatcher and W. Yu}, 
+journal={IEEE Access}, 
+title={A Survey of Deep Learning: Platforms, Applications and Emerging Research Trends}, 
+year={2018}, 
+volume={6}, 
+number={}, 
+pages={24411-24432}, 
+keywords={learning (artificial intelligence);deep learning research;human-centered smart-world systems;Machine learning;Neurons;Neural networks;Task analysis;Learning systems;Computational modeling;Training;Human-centered smart systems;deep learning;platform;neural networks;emergent applications;Internet of Things;cyber-physical systems;survey;networking;security}, 
+doi={10.1109/ACCESS.2018.2830661}, 
+ISSN={2169-3536}, 
+month={},}
 
 @BOOK{rlIntro,
 	TITLE = {Reinforcement Learning: An Introduction},
@@ -23,6 +322,13 @@
 	chapter = {2},
 }
 
+@incollection{sigmoidReason,
+	title = {Sigmoid Neurons},
+	author = {Michael A Nielsen},
+	crossref = {backpropBook},
+	chapter = {1},
+}
+
 @book{backpropBook,
 	TITLE = {Neural Networks and Deep Learning},
 	BOOKTITLE={Neural Networks and Deep Learning},
@@ -30,6 +336,23 @@
 	AUTHOR = {Michael A Nielsen},
 	YEAR = {2015},
 	
+}
+
+
+@article{RMSPropPaper,
+abstract = "Gradient descent optimization algorithms, while increasingly popular, are often used as black-box optimizers, as practical explanations of their strengths and weaknesses are hard to come by. This article aims to provide the reader with intuitions with regard to the behaviour of different algorithms that will allow her to put them to use. In the course of this overview, we look at different variants of gradient descent, summarize challenges, introduce the most common optimization algorithms, review architectures in a parallel and distributed setting, and investigate additional strategies for optimizing gradient descent.",
+author = "Ruder, Sebastian",
+keywords = "Computer Science - Learning",
+title = "An overview of gradient descent optimization algorithms",
+year = "2016-09-15"
+}
+
+@article{AdamPaper,
+abstract = "We introduce Adam, an algorithm for first-order gradient-based optimization of stochastic objective functions, based on adaptive estimates of lower-order moments. The method is straightforward to implement, is computationally efficient, has little memory requirements, is invariant to diagonal rescaling of the gradients, and is well suited for problems that are large in terms of data and/or parameters. The method is also appropriate for non-stationary objectives and problems with very noisy and/or sparse gradients. The hyper-parameters have intuitive interpretations and typically require little tuning. Some connections to related algorithms, on which Adam was inspired, are discussed. We also analyze the theoretical convergence properties of the algorithm and provide a regret bound on the convergence rate that is comparable to the best known results under the online convex optimization framework. Empirical results demonstrate that Adam works well in practice and compares favorably to other stochastic optimization methods. Finally, we discuss AdaMax, a variant of Adam based on the infinity norm.",
+author = "Kingma, Diederik P. and Ba, Jimmy",
+keywords = "Computer Science - Learning",
+title = "Adam: A Method for Stochastic Optimization",
+year = "2014-12-22"
 }
 
 @online{lossFcns,
@@ -259,7 +582,7 @@ archivePrefix = "arXiv",
   adsnote = {Provided by the SAO/NASA Astrophysics Data System}
 }
 
-@INPROCEEDINGS{6033578, 
+@INPROCEEDINGS{glorot_training, 
 author={X. Glorot and Y. Bengio}, 
 booktitle={The Thirteenth International Conference on Artificial Intelligence and Statistics}, 
 title={Understanding the Difficulty of Training Deep Feedforward Neural Networks}, 
