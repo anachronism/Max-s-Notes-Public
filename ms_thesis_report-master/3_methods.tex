@@ -7,9 +7,29 @@
 \caption{placeholder figure for CE block diagram}
 \end{figure}
 \par The architecture of the CE is independent of the implementation method, and will be described in the following section. The overarching architecture follows that of a SARSA Reinforcement Learning algorithm, with certain aspects replaced by MLPs. 
-\par The engine begins by randomly selecting actions and observing the results of these actions, storing action-reward pairs in a history buffer. Once this buffer has filled up, explore and exploit networks are trained. After completing training, the CE has completed its startup process.
+\par The engine begins by randomly selecting actions and observing the results of these actions, storing action-reward pairs in a history buffer. In this experiment, the action is the specific configuration of PHY layer parameters, and the reward is a fitness score that is a weighted combination of different evaluation metrics, including thoughput, spectral efficiency, bandwidth used, power consumed on transmit, bit error rate (BER), and DC power consumed. Throughput, spectral efficiency, and bandwidth are all calculated based on the chosen set of PHY parameters, while DC power consumed and transmit power consumed are measured. BER comes from a table that was precalculated. The calculated parameters are described in more detail in Appendix \ref{app:PhyParams}. Each parameter gets scaled from 0 to 1 based on the values that can be expected from each input. Then, they get combined in a weighted manner to produce the resulting fitness score. The importance of each metric is hard to determine, and can change depending on what the system currently needs to do. Six different weight combinations were developed, and are shown in table \ref{table:fitMissions}.
+\begin{table}
+\centering
+\begin{tabu} to 1.15\textwidth{|X[c]|X[c] X[c] X[c] X[c] X[c] X[c]|}
+	\hline 
+	Mission Name & Throughput&BER&Target BW&Spectral Efficiency&TX Efficiency&DC Power Consumed\\
+	\hline
+	Emergency& 0.1 &0.8&0.025&0.025&0.025&0.025 \\
+	Cooperation&0.05&0.05&0.4&0.4&0.05&0.05\\
+	Power Saving&0.05&0.05&0.05&0.05&0.3&0.5\\
+	Balanced&1/6&1/6&1/6&1/6&1/6&1/6\\
+	Launch&0.2&0.4&0.1&0.1&0.1&0.1\\
+	Multimedia&0.5&0.3&0.05&0.05&0.05&0.05\\
+	\hline
+\end{tabu}
+\caption{Table containing different ways fitness score can be weighted.}
+\label{table:fitMissions}
+\end{table}
+\par Once this buffer has filled up, explore and exploit networks are trained. After completing training, the CE has completed its startup process. 
 \par For the first step after training, the exploration threshold $\epsilon$ is set to 1, forcing an explore During each following step, the $\epsilon$ value is recalculated. This is done by taking the inverse of an incrementing counter. When this value passes a threshold, the counter is reset and an exploration is again forced. After $\epsilon$ is updated, a number is drawn from a uniformly random distribution $\mathcal{U}(0,1)$. Then, if this number is less than $\epsilon$, an explore iteration is triggered. Otherwise, an exploit iteration is triggered.
-\par In the case of an exploration, all actions in the action space, as well as the observed SNR (normalized to [0,1] by dividing by the maximum SNR), are used as inputs to the \textit{\textbf{Explore MLP (or MLPs in the case of an ensemble).}} The MLP returns a predicted fitness score for each action. From this, the actions are split up into two groups: actions that have a fitness score greater than the threshold and actions that have a fitness score less than the threshold. Then, with a 95\% probability, an action is randomly selected from the group of actions with a greater fitness score than the threshold. The 5\% probability of selecting from the other group of actions allows for exploration of areas that the Explore MLP may have misinterpreted or areas that have been insufficiently explored.
+\par In the case of an exploration, all actions in the action space, as well as the observed SNR (normalized to [0,1] by dividing by the maximum SNR), are used as inputs to the \textit{\textbf{Explore MLP (or MLPs in the case of an ensemble).}} The MLP returns a predicted fitness score for each action. 
+
+\par  From this, the actions are split up into two groups: actions that have a fitness score greater than the threshold and actions that have a fitness score less than the threshold. Then, with a 95\% probability, an action is randomly selected from the group of actions with a greater fitness score than the threshold. The 5\% probability of selecting from the other group of actions allows for exploration of areas that the Explore MLP may have misinterpreted or areas that have been insufficiently explored.
 \par In the case of exploitation, The normalized observed reward values of the last action are used as inputs to the exploit MLPs. One MLP corresponds to each tuneable parameter, of which there are six. These six output values are then denormalized to get the actual output actions.
 \par Regardless of how the action was chosen, it is then transmitted to the SDR platform (either in simulation or reality). The values received after transmission are $Es/No$, power consumed, power efficiency, bandwidth used, and throughput. These are all measured at the transmit side. At the receive side, a BER, spectral efficiency, and throughput are measured or calculated. Once these are all present, a fitness score is calculated, as a weighted combination of these values. Currently, these weights are somewhat arbitrarily picked to simulate theoretical potential use cases. However, these weights can be essentially whatever seems correct, and could potentially be chosen by AI as well. 
 \begin{table}
