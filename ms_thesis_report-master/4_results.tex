@@ -245,7 +245,7 @@
 \end{figure}
 
 
-\par \textbf{\textit{[words on the 2d histograms]}}
+\par Figure \ref{fig:coop_great_2dhist} shows the 2d histograms generated for each training method. Like the C++ simulation, the X dimension of the histogram is the EsNo observed, and the Y dimension is the fitness distance observed. However, unlike the C++ simulation, the colored dimension is the count of samples that fall in that bin normalized by the total count of samples. This is done to mitigate the fact that different passes are able to have different numbers of steps before finishing. In the simulation this normalization was less important because the different training methods all used the same EsNo profile. However, with the flight test results the counts likely to vary by a significant margin
 
 \begin{figure}[ht]
 \centering
@@ -253,9 +253,42 @@
 \caption{2d histograms of each CE training method, as well as binned means.}
 \label{fig:coop_great_2dhist}
 \end{figure}
+\par Looking at the table, the behavior of each training method becomes clear. CE-RLM performs the worst. It appears to have converged fairly well to an action in the high EsNo regime. It appears to be locked on to this action more so than CE-LM or CE-NSE, which have a wider range of fitness distances observed in the same regime, all with lower fitness distances. Beyond the middle EsNo regime though, it loses any action to be taken, and keeps exploring. CE-NSE performs similarly to CE-LM in the higher EsNo regime and the lower EsNo regime, but has trouble in the middle regime. Comparing Figures \ref{fig:flight_lm_coop_great_overview} and \ref{fig:flight_nse_coop_great_overview}, it's likely that this is because the EsNo changes more rapidly during between 250 and 350 seconds. CE-LM appears to lock on to an action during this time, while CE-NSE does not. 
 
 
-\par \textbf{\textit{[words on the 2d histograms]}}
+\par Figures \ref{figures/flight_results/coop_good_lm_overview.eps}, \ref{figures/flight_results/coop_good_rlm_overview.eps}, and \ref{figures/flight_results/coop_good_nse_overview.eps} are overview plots of CE-LM, CE-RLM, and CE-NSE during "Good" passes. Once again CE-RLM appears to perform worse than CE-LM and CE-NSE. Because of the low quality of the pass between 100 and 150 seconds, CE-RLM forces a retraining. Since the RLM algorithm is implemented sample-by-sample, this retraining is most of the pass. CE-NSE encounters a similar patch, but recovers. 
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\textwidth]{figures/flight_results/coop_good_lm_overview.eps}
+\caption{Overview of CE-LM operating Cooperation mission on Good quality pass.}
+\label{fig:flight_lm_coop_good_overview}
+\end{figure}
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\textwidth]{figures/flight_results/coop_good_rlm_overview.eps}
+\caption{Overview of CE-RLM operating Cooperation mission on Good quality pass.}
+\label{fig:flight_rlm_coop_good_overview}
+\end{figure}
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\textwidth]{figures/flight_results/coop_good_nse_overview.eps}
+\caption{Overview of CE-NSE operating Cooperation mission on Good quality pass.}
+\label{fig:flight_nse_coop_good_overview}
+\end{figure}
+
+\par Figure \ref{fig:coop_good_2dhist} shows the 2d histograms for the training methods during good passes. The histogram for CE-RLM is fairly straightforward, with the high EsNo regime being from the beginning of the pass, and the middle line representing the action that is chosen during forced retraining. The CE-LM and NSE-LM are similar to the performance during the great pass, except with the roles reversed. 
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\textwidth]{figures/flight_results/coop_good_2dhist.eps}
+\caption{2d histograms of each CE training method, as well as binned means.}
+\label{fig:coop_good_2dhist}
+\end{figure}
+
+\par Figure \ref{fig:flightCoopMeanMed} shows the binned mean and median values for both the Great passes and the Good Passes. It also shows the unweighted sum of these values.The mean values shown in Figure \ref{fig:FlightCoopGreatMeanMed} show the difference between CE-LM and CE-NSE as primarily in the intermediate EsNo values. However, by looking at the median values, it's clear that CE-NSE works worse than CE-LM at lower EsNo values as well. This contrasts with the performance shown in Figure \ref{fig:FlightCoopGoodMeanMed}, in which the mean values of CE-NSE appear to  be slightly better in intermediate EsNo values than CE-LM. By looking at the median values, this difference is extended. 
+\par Figure \ref{fig:flightCoopGoodUnweightSum} shows the unweighted sum of the mean and median bins during the Cooperation mission. Bar 1 is from the Great passes, bar 2 is from the Good passes, and bar 3 is from the Poor passes. This follows the expected values as well.
+
 \begin{figure}[ht]
 \begin{subfigure}{0.50\linewidth}
 \centering
@@ -270,19 +303,21 @@
 \label{fig:flightCoopGoodMeanMed}
 \end{subfigure}
 \\
-\begin{center}
 \begin{subfigure}{0.50\linewidth}
-\centering
 \includegraphics[scale=0.6]{figures/flight_results/Coop_bar.eps}
 \caption{Mean and median \textit{\textbf{[make this actually a good caption lol]}}}
 \label{fig:flightCoopGoodUnweightSum}
 \end{subfigure}
-\end{center}
+\begin{subfigure}{0.50\linewidth}
+% \includegraphics[scale=0.6]{figures/flight_results/Coop_bar.eps}
+\caption{Mean and median \textit{\textbf{[make weighted bar plot]}}}
+\label{fig:flightCoopGoodweightSum}
+\end{subfigure}
 \caption{[fillercaption]}
 \label{fig:flightCoopMeanMed}
 \end{figure}
 
-
+\section{Summary}
 
 % \begin{itemize}
 % 	\item Time series plot.
