@@ -1,16 +1,18 @@
 \chapter{Methods}\label{ch:methods}
-\par In the following chapter, both the software and hardware details of the test platform will be described. First, Language independent aspects of the baseline software implementation of the Cognitive Engine will be described. Then, the language dependent aspects of the implementation will be explained. After this, the modified training methods will be explained. These methods include Recursive Levenberg-Marquardt (RLM), as well as Learn++.NSE (NSE). The CE was first implemented in MATLAB, to verify functionality. This was then ported to C++ using the MLPack library. Both these implementations are described below. After discussing the software, the hardware setups for ground testing, validation, and flight testing will be described.
-\section{Software Methods}
+\par In the following chapter, both software and hardware details of the test platforms used will be described. First, details about the software platforms will be included. This initially describes aspects of the software that are independent of the programming languages. Then, the language-dependent details will be provided. The CE was first implemented in MATLAB, to verify functionality. This was then ported to C++ using the MLPack library. Details about implementation in both languages will be described, both for the baseline implementation (CE-LM) and the two modified training methods (CE-RLM and CE-NSE). Once the software is described, the hardware setups for ground testing and flight testing will be described. Finally, the postprocessing will be briefly discussed.
 
+\section{Software Methods}
+\par The architecture of the CE is independent of the implementation language, and will be described first. Following that, the specific elements of MATLAB implementation and C++ implementation will be explained.
 \subsection{CE Details}
-\begin{figure}
-\caption{placeholder figure for CE block diagram}
+\par The architecture of the CE follows the SARSA algorithm described in Algorithm \ref{code:bg_SARSA}. The \textit{flow of information through the CE \textbf{[rephrase]}} is shown in Figure \ref{fig:ceDataFlow}. 
+\begin{figure}[ht]
+\includegraphics[width=\textwidth]{figures/Placeholder.png}
+\caption{placeholder figure for CE block diagram}\label{fig:ceDataFlow}
 \end{figure}
-\par The architecture of the CE is independent of the implementation method, and will be described in the following section. The overarching architecture follows that of a SARSA Reinforcement Learning algorithm, with certain aspects replaced by MLPs. 
-\par The engine begins by randomly selecting actions and observing the results of these actions, storing action-reward pairs in a history buffer. In this experiment, the action is the specific configuration of PHY layer parameters, and the reward is a fitness score that is a weighted combination of different evaluation metrics, including thoughput, spectral efficiency, bandwidth used, power consumed on transmit, bit error rate (BER), and DC power consumed. Throughput, spectral efficiency, and bandwidth are all calculated based on the chosen set of PHY parameters, while DC power consumed and transmit power consumed are measured. BER comes from a table that was precalculated. The calculated parameters are described in more detail in Appendix \ref{app:PhyParams}. Each parameter gets scaled from 0 to 1 based on the values that can be expected from each input. Then, they get combined in a weighted manner to produce the resulting fitness score. The importance of each metric is hard to determine, and can change depending on what the system currently needs to do. Six different weight combinations were developed, and are shown in table \ref{table:fitMissions}.
-\begin{table}
+\par The CE begins by randomly selecting actions and observing the results of these actions, storing unique action-reward pairs in a history buffer. In this experiment, the action is the specific configuration of PHY parameters, and the reward is a fitness score created by taking a weighted combination of different evaluation metrics. These metrics include thoughput, spectral efficiency, bandwidth used, power consumed on transmit, bit error rate (BER), and DC power consumed. Throughput, spectral efficiency, and bandwidth are all calculated based on the chosen set of PHY parameters, while DC power consumed and transmit power consumed are measured. \textit{BER comes from a table that was precalculated\textbf{[rephrase]}}. Each parameter gets scaled from 0 to 1 based on the values that can be expected from each input. Then, they get combined in a weighted manner to produce the resulting fitness score. The importance of each metric is hard to determine, and can change depending on what priorities the system currently has. Six different weight combinations were arbitrarily selected to represent plausible use cases, and are shown in Table \ref{table:fitMissions}.
+\begin{table}[ht]
 \centering
-\begin{tabu} to 1.15\textwidth{|X[c]|X[c] X[c] X[c] X[c] X[c] X[c]|}
+\begin{tabu} to 1\textwidth{|X[c]|X[c] X[c] X[c] X[c] X[c] X[c]|}
 	\hline 
 	Mission Name & Throughput&BER&Target BW&Spectral Efficiency&TX Efficiency&DC Power Consumed\\
 	\hline
@@ -22,7 +24,7 @@
 	Multimedia&0.5&0.3&0.05&0.05&0.05&0.05\\
 	\hline
 \end{tabu}
-\caption{Table containing different ways fitness score can be weighted.}
+\caption{Table containing different ways fitness score can be weighted. \textit{\textbf{[make fit better]}}}
 \label{table:fitMissions}
 \end{table}
 \par Once this buffer has filled up, explore and exploit networks are trained. After completing training, the CE has completed its startup process. 

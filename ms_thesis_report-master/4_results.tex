@@ -1,6 +1,6 @@
 \chapter{Results}\label{ch:results}
 
-\par In the following chapter, the results of the implemented Catestrophic Forgetting mitigation techniques will be explored. There are three main categories of results collected: MATLAB simulation results, C++ simulation results, and C++ flight test results.
+\par In the following chapter, the results of the implemented Catestrophic Forgetting mitigation techniques will be explored. There are three main categories of results collected: MATLAB simulation results, C++ simulation results, and C++ flight test results. \textbf{\textit{[ a little bit more here]}}
 \section{Simulation results, MATLAB}
 \par MATLAB was initially used in developing the modified CEs, both with the RLM training method (CE-RLM) and the NSE training method (CE-NSE). The intent of the MATLAB simulation was to verify the potential benefit of both changes to the CE, in an environment where implementing iterational modifications is as frictionless as possible. More realistic analysis, including timing analysis, was conducted in the C++ CE implementation. As such, the SNR profile used in MATLAB-based testing was a simple slow-fading channel, so that degenerate behavior would be definitively a result of poorly implemented code. A plot of the SNR profile is shown in Figure \ref{fig:matlabSNRProf}. 
 
@@ -85,7 +85,7 @@
 \begin{subfigure}{\linewidth}
 	\centering
 	\includegraphics[scale=0.5]{figures/c_sim_results/sim22_RLM_hists_coop.eps}
-	\caption{Histogram of RLM operating cooperation mission. \textit{\textbf{[less things on plot]}}}
+	\caption{Histogram of RLM operating cooperation mission.}
 	\label{fig:cSimLMHists}
 \end{subfigure}
 \caption{Summary of CE-RLM operation with cooperation mission on the pass in Figure \ref{fig:cSimSNRProfile}.}
@@ -102,7 +102,7 @@
 \begin{subfigure}{\linewidth}
 	\centering
 	\includegraphics[scale=0.5]{figures/c_sim_results/sim22_NSE_hists_coop.eps}
-	\caption{Histogram of NSE operating cooperation mission. \textit{\textbf{[Less things on plot]}}}
+	\caption{Histogram of NSE operating cooperation mission.}
 	\label{fig:cSimNSEHists}
 \end{subfigure}
 \caption{Summary of CE-NSE operation with cooperation mission on the pass in Figure \ref{fig:cSimSNRProfile}.}
@@ -195,7 +195,7 @@
 \end{figure}
 
 \par One potential flaw of the plots in Figure \ref{fig:unweight_sumFit} is that a bin that has a small number samples in it would have the same impact on the plot as a bin that has a large samples in it. In order to mitigate this, the same plots were recalculated, except the mean and median values of the bins were multiplied by the number of samples in the bin divided by the total number of samples. This way, a good performance in a common EsNo regime won't be overshadowed by a poor performance in an uncommon EsNo regime. These modified plots are shown in Figure \ref{fig:weight_sumFit}. This normalization changed some of the results for individual SNR profiles, but the general patterns observed remain the same.
-
+\par \textbf{\textit[Timing results from the simulation maybe]}
 \clearpage
 \section{Flight Test results}
 \par Flight tests were conducted in two different time periods: the testing of CE-LM were conducted between May 2, 2017 and May 12, 2017, as described in \cite{tim_implementation_paper}. The testing of CE-RLM and CE-NSE took place between August 16, 2018 and August 24, 2018. Tables containing more details about the conditions in which the training methods were tested are included in Appendix \ref{app:pass_details}. 
@@ -317,8 +317,63 @@
 \label{fig:flightCoopMeanMed}
 \end{figure}
 
-\section{Summary}
+\par In addition to the performance of the training algorithms, the time the CE takes to run an iteration is also a crucial evaluation point. \textbf{\textit{[Rephrase this probably, it seems weird]}}. Regardless of the training method, the MLPs are used in the same way, and have the same structure. This is illustrated in Figure \ref{fig:histExecTimes}, which show histograms of the amount of time it takes to evaluate an input to the Explore and Exploit MLPs. Because of this similarity, the major difference in execution time is tied to how long it takes for each algorithm to be retrained. 
+\begin{figure}[ht]
+\begin{subfigure}{\linewidth}
+\centering
+\includegraphics[scale=0.8]{figures/flight_results/coop_great_lm_updateRateJitter_log.eps}
+\caption{Mean and median \textit{\textbf{[make this actually a good caption lol]}}}
+\label{fig:flightCoopGreatMeanMed}
+\end{subfigure} 
+\begin{subfigure}{\linewidth}
+\centering
+\includegraphics[scale=0.8]{figures/flight_results/coop_great_rlm_updateRateJitter_log.eps}
+\caption{Mean and median \textit{\textbf{[make this actually a good caption lol]}}}
+\label{fig:flightCoopGoodMeanMed}
+\end{subfigure}
+\begin{subfigure}{\linewidth}
+\centering
+\includegraphics[scale=0.8]{figures/flight_results/coop_great_nse_updateRateJitter_log.eps}
+\caption{Mean and median \textit{\textbf{[make this actually a good caption lol]}}}
+\label{fig:flightCoopGoodUnweightSum}
+\end{subfigure}
 
+\caption{[fillercaption]}
+\label{fig:histExecTimes}
+\end{figure}
+
+\clearpage
+\par A time series outlining how long the CE was in training mode for each run is shown in Figure \ref{fig:timeSeriesTrain}. It is in this plot where the big time issue with RLM becomes evident. The fact that RLM takes a highly parallel operation and makes it sequential is evident by the fact that it takes 200 seconds to train on one buffer. Given the fact that a single pass tends to take at most around 500 seconds, this training time is too long, and prevents the network from adapting at a useful rate. This is what can be attributed for the passes in which CE-RLM fails to converge appropriately.
+\par The comparison between training time for CE-LM and CE-NSE is \textit{more suitable \textbf{[what do you mean by more suitable]}}. CE-NSE uses LM when training the individual networks of the ensemble. As such, it is unsurprising that CE-LM takes less time to train than CE-NSE, which has additional calculations in addition to the LM training. The small number of results from the flight tests make any further analysis of timing beyond this level unlikely to provide useful insight. The ultimate conclusion is that CE-NSE, while taking more time to train than CE-LM, still remains within the realm of usability. The same cannot be said for CE-RLM. 
+\par \textit{\textbf{[talk about timing with fixed time histogram plots here]}}
+
+
+\begin{figure}[ht]
+\begin{subfigure}{\linewidth}
+\centering
+\includegraphics[scale=0.8]{figures/flight_results/coop_great_lm_trainRate.eps}
+\caption{Mean and median \textit{\textbf{[make this actually a good caption lol]}}}
+\label{fig:flightCoopGreatMeanMed}
+\end{subfigure} 
+\begin{subfigure}{\linewidth}
+\centering
+\includegraphics[scale=0.8]{figures/flight_results/coop_great_rlm_trainRate.eps}
+\caption{Mean and median \textit{\textbf{[make this actually a good caption lol]}}}
+\label{fig:flightCoopGoodMeanMed}
+\end{subfigure}
+\begin{subfigure}{\linewidth}
+\centering
+\includegraphics[scale=0.8]{figures/flight_results/coop_great_nse_trainRate.eps}
+\caption{Mean and median \textit{\textbf{[make this actually a good caption lol]}}}
+\label{fig:flightCoopGoodUnweightSum}
+\end{subfigure}
+
+\caption{[fillercaption]}
+\label{fig:trainingTimeSeries}
+\end{figure}
+
+\section{Summary}
+\par \textbf{\textit[Actually summarize the results]}
 % \begin{itemize}
 % 	\item Time series plot.
 % 	\item histogram
