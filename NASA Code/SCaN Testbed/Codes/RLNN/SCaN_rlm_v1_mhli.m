@@ -8,9 +8,9 @@ f_observed2_save = cell(numIterations,1);
 for iterations=1:numIterations
     iterations
     episode_dur=21600; %only for analysis
-    
-    for mission_num=4 %[1:5] Loop over different mission profiles/fitness functions
-        clearvars -except mission_num episode_dur iterations numIterations f_observed_save f_observed2_save
+    mission_iter = 1;
+    for mission_num=[6,5,3] %[1:5] Loop over different mission profiles/fitness functions
+        clearvars -except mission_num episode_dur iterations numIterations f_observed_save f_observed2_save  mission_iter
         f_observed=[];
         f_observed2=[];
         
@@ -727,7 +727,7 @@ for iterations=1:numIterations
                     %Training NN1
                     if updateBatch
                         tic
-                        for n_i=1:numNN%parfor n_i=1:numNN
+                        parfor n_i=1:numNN%parfor n_i=1:numNN
                             NN{n_i}=train(net,examples_input',examples_target');
                         end
                         elapsedTime =toc;
@@ -821,9 +821,9 @@ for iterations=1:numIterations
                 
             end %End of Main iteration (while)
         end %End of multiple iterations for different channels
+        f_observed_save{mission_iter} = f_observed;
+        f_observed2_save{mission_iter} = f_observed2;
+        mission_iter = mission_iter + 1;
     end %End of mission loop
-
-    f_observed_save{iterations} = f_observed;
-    f_observed2_save{iterations} = f_observed2;
     %eval(sprintf('save(''sim_%d_m4_resetMODE9.mat'')', iterations)) 
 end

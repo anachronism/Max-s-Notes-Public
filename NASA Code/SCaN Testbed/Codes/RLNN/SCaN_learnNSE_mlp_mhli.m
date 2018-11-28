@@ -5,9 +5,9 @@ close all; clc
 for iterations=1
     
     episode_dur=21600; %only for analysis
-    
-    for mission_num=4 %[1:5] Loop over different mission profiles/fitness functions
-        clearvars -except mission_num episode_dur iterations
+    mission_iter = 1;
+    for mission_num=[6,5,3] %[1:5] Loop over different mission profiles/fitness functions
+        clearvars -except mission_num episode_dur iterations numIterations f_observed_save f_observed2_save  mission_iter
         f_observed=[];
         f_observed2=[];
         
@@ -370,7 +370,7 @@ for iterations=1
                             %%% USAGE OF NNs
                             %Predictions
                             
-                            for i_NN=1:numNN %%% parfor
+                            parfor i_NN=1:numNN %%% parfor
                                 numOutputs = size(input_explore,2);
                                 numExperts = size(NN{i_NN}.classifiers,2);
                                 %%% TODO: CHANGE INPUT_EXPLORE
@@ -378,7 +378,7 @@ for iterations=1
                                 y_pred(i_NN,:) = y_tmp;
 %                                 y_pred(i_NN,:)=NN{i_NN}(input_explore); %Explore NN prediction
                             end
-                            ind_applicable = find(err < 1);
+%                             ind_applicable = find(err < 1);
                             if size(y_pred,1) > 1
                                f_predic=mean(y_pred); %Ensamble average prediction
                             else
@@ -437,7 +437,7 @@ for iterations=1
                             %Predictions
 
                             for n_i=1:numNN_exploit
-                                for n_j=1:6 % parfor
+                                parfor n_j=1:6 % parfor
                                     numExperts_exploit = size(NN_exploit{n_j,n_i}.classifiers,2);
 %                                     norm_action_pred(n_i,n_j)=NN_exploit{n_j,n_i}(input_norm); %Exploit NN prediction
                                     norm_action_pred(n_i,n_j) = regress_ensemble(NN_exploit{n_j,n_i},input_norm,numExperts_exploit);
@@ -741,7 +741,7 @@ for iterations=1
                     %Training NN1
                     if updateBatch
                         tic
-                        for n_i=1:numNN %%%parfor
+                        parfor n_i=1:numNN %%%parfor
                             NN{n_i}=train(net,x1,y1);
                         end
                         elapsedTime =toc;
@@ -750,17 +750,17 @@ for iterations=1
                     
                     if updateRecurse
                         tic
-                       for i = 1:numNN %%% parfor % for i = 1:numNN
+                       parfor i = 1:numNN %%% parfor % for i = 1:numNN
                             [NN{i},~,~,~,~,err] = ...
                                 learn_nse_update(NN{i}, x1, y1, x2, ...
                                                 y2);
 %                             [NN{i},NN_recurseMatrix{i},err(i)] = trainrlm(NN{i},NN_recurseMatrix{i},x1,y1);
                         end
                         elapsedTime = toc;
-                        [minVal, indMin] = min(err);
-                        [maxVal, indMax] = max(err);
-                        fprintf('Time to train explore network is %f, Mean error is %f,\nError [%f, %f] \nIndex[%d, %d] \n',...
-                                    elapsedTime,mean(err), minVal,maxVal, indMin, indMax);
+%                         [minVal, indMin] = min(err);
+%                         [maxVal, indMax] = max(err);
+%                         fprintf('Time to train explore network is %f, Mean error is %f,\nError [%f, %f] \nIndex[%d, %d] \n',...
+%                                     elapsedTime,mean(err), minVal,maxVal, indMin, indMax);
 %                         err
                     end
                     %flags0e
@@ -808,10 +808,10 @@ for iterations=1
                     end
                     elapsedTime =toc;
 %                     fprintf('Time to train exploit network is %f sec. \n',elapsedTime);
-                    [minVal, indMin] = min(min(err_exploit));
-                        [maxVal, indMax] = max(max(err_exploit));
-                        fprintf('Time to train exploit network is %f, Mean error is %f\n\n',...
-                                    elapsedTime,mean(mean(err_exploit)));
+%                     [minVal, indMin] = min(min(err_exploit));
+%                         [maxVal, indMax] = max(max(err_exploit));
+%                         fprintf('Time to train exploit network is %f, Mean error is %f\n\n',...
+%                                     elapsedTime,mean(mean(err_exploit)));
                     NN_train_exploit=1;
                     
                     %-------------Reset sliding window------------
@@ -828,6 +828,9 @@ for iterations=1
                 
             end %End of Main iteration (while)
         end %End of multiple iterations for different channels
+        f_observed_save{mission_iter} = f_observed;
+        f_observed2_save{mission_iter} = f_observed2;
+        mission_iter = mission_iter + 1;
     end %End of mission loop
     %eval(sprintf('save(''sim_%d_m4_resetMODE9.mat'')', iterations)) 
 end
