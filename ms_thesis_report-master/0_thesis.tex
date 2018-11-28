@@ -40,15 +40,17 @@
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{wrapfig}
-\usepackage{acronym}
+%\usepackage{acronym}
+
 \restylefloat{figure}
 \usepackage{cite}
 \usepackage{gensymb}
 \usepackage{url}
 \usepackage{hyperref}
-\usepackage[toc]{glossaries}
-\usepackage{nomencl}
+%\usepackage[toc]{glossaries}
+\usepackage[intoc, english]{nomencl}
 \makenomenclature
+%\renewcommand{\nomname}{Table of Acronyms}
 \usepackage[toc,page]{appendix}
 \usepackage{caption}
 \usepackage{amsmath} % Matrices
@@ -173,7 +175,7 @@
 		Electrical and Computer Engineering
 		
 		\brk
-		May 2018/Dec 2018s
+		Dec 2018
 	\end{center}
 	
 	% Remove paragraph indent temporarily
@@ -206,10 +208,7 @@
 	% paragraph in braces {\singlespacing This is my text... blah blah blah}
 	%
 	\doublespacing
-	
-	\begin{abstract}
-		TODO. Secondary test edit to see if I can update git in both operating systems.
-	\end{abstract}
+	\include{P2_abstract}
 
 	\pagenumbering{roman} % or {Roman} if you like them capitalized
 	

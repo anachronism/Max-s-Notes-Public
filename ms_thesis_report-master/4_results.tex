@@ -1,6 +1,6 @@
 \chapter{Results}\label{ch:results}
 
-\par In the following chapter, the results of the implemented Catestrophic Forgetting mitigation techniques will be explored. There are three main categories of results collected: MATLAB simulation results, C++ simulation results, and C++ flight test results. %\textbf{\textit{[ a little bit more here]}}
+\par In the following chapter, the results of the implemented Catastrophic Forgetting mitigation techniques will be explored. There are three main categories of results collected: MATLAB simulation results, C++ simulation results, and C++ flight test results. %\textbf{\textit{[ a little bit more here]}}
 \section{Simulation results, MATLAB}
 \par MATLAB was initially used in developing the modified CEs, both with the RLM training method (CE-RLM) and the NSE training method (CE-NSE). The intent of the MATLAB simulation was to verify the potential benefit of both changes to the CE, in an environment where implementing iterational modifications is as frictionless as possible. More realistic analysis, including timing analysis, was conducted in the C++ CE implementation. As such, the SNR profile used in MATLAB-based testing was a simple slow-fading channel, so that degenerate behavior would be definitively a result of poorly implemented code. A plot of the SNR profile is shown in Figure \ref{fig:matlabSNRProf}. 
 \begin{figure}[ht]

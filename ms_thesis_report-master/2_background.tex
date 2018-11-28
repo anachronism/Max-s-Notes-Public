@@ -220,7 +220,7 @@
 	
 	\section{Advanced Topics in Machine Learning}
 	\par \textbf{\textit{[Intro paragraph needed]}}
-	\subsection{Online Learning and Catastrophic Forgetting}
+	\subsection{Online Learning and Catastrophic Forgetting}\label{bg:onlineLearning}
 	\par In supervised learning, there are two different learning paradigms: Online learning and offline learning. Offline algorithms assume that there is one set of inputs and outputs to train on, and that once training is complete there will be no updates to the algorithm. The training methods described in Section \ref{bg:introToML} are all considered to be offline methods. This is contrasted with online algorithms, which update as new data is received. The choice between an offline algorithm and an online algorithm is dependent on the problem that is selected. With a stationary dataset, a single training period can be sufficient. However, if the dataset is nonstationary, there is a reason for multiple training periods capturing the shifting of the data, also known as concept drift \cite{placeholderCitation}. Since effective space communications systems are dependent on many nonstationary variables, online methods are more suited for this project.
 	\par The most basic category of online methods consists of generalizations of offline methods. In this category, a window of incoming data is collected. Once this window is full, the collected data is used to train using an offline method. Then, some number of datapoints are dropped and the window is filled again. This moving window process is the most straightforward extrapolation of offline algorithms. In the baseline CE, this method is applied to LM \cite{placeholderCitation}. The moving-window approach has one major problem that it introduces. The LM algorithm updates the weights using the data that is put into itwhich is similar to many first-order offline algorithms (Stochastic Gradient Descent \cite{placeholderCitation}, Adam \cite{placeholderCitation}, RMSProp \cite{placeholderCitation}, etc.). In this type of online method, the window moves and overwrites old datapoints, with these old datapoints no longer influencing how the model is trained. As a result of this, the model will lose the information that was encoded as a result of these datapoints; this is called catastrophic forgetting \cite{placeholderCitation}.  Catastrophic forgetting primarily affects learning in non-stationary environments.\textbf{\textit{[I don't really think that the suggestion you provided made sense]}} If an environment is stationary, the fact that datapoints are no longer used in training has little effect as the datapoints replacing them will come from the same probability distribution. However, in non-stationary environments, the loss of information is more significant. If there is any cyclical nature of the changes, the information will have to be relearned each time.
 	\begin{figure}[ht]
@@ -244,7 +244,7 @@
 	
 	\end{figure}
 	\par One way to deal with this is to use a recursive training method, which updates the network based on batches of samples each time but uses these samples to update an internal state. The recursive implementation LM, as described by Ngia and Sjoberg \cite{placeholderCitation}, is used in this thesis. In this process, there is a forgetting factor $\alpha$ built in that allows for the network to forget past inputs in a more explicit manner than the standard batch-update method. In the following equations, $\varepsilon(h_t) = \sqrt{J(h_t)}$, $P_t$ can be considered the covariance matrix of the weights, $\Omega^T(h_t)$ is a modified gradient for y, allowing for a normalization factor $\rho$ to be added in one weight at a time. The second row of $\Omega^T(h_t)$ is 0 for all indices where $i\ mod\ (nWeights+1) \neq t$, and 1 where $i\ mod\ (nWeights+1) = t$. $\alpha$ is the rate of forgetting. 
-	\begin{align}
+	\begin{align}\label{bg:RLM_ref}
 		\Omega^T(h_t) &= \begin{bmatrix}
 			&& \nabla_y^T(h_t) && \\ 0 & ... & 1 & ... & 0
 		\end{bmatrix} \\
@@ -260,7 +260,7 @@
 	\par The method most relevant to addressing the problem of catastrophic forgetting is Learn++.NSE \cite{placeholderCitation}. For each window of samples, Learn++.NSE creates a new learner that is trained on the window. The samples in the training window are weighted by how much trouble the pre-existing learners had in predicting the value, ensuring that the new learner is better at recognizing these samples. It then weights the new learner and existing learners based on how well they work on the training data, using a metric such as MSE. In doing this, existing learners contribute to the resulting prediction based on how well they work on the most recent window of data. 
 		\begin{algorithm}[ht!]
 		\caption{Learn.NSE++ Pseudoalgorithm \textbf{\textit{[carry line breaks over moving things]}}}
-		\label{code:bg_nse}
+		\label{bg:nseSection}
 		\begin{algorithmic}[1]
 			\Procedure{Learn.NSE++}{}
 			\State $t=1,\ numActiveClassifiers = 0$ 

@@ -16,7 +16,7 @@ ifneq ($(OS),Windows_NT)
 	cd ../
 endif
 	pdflatex -output-directory=build 0_thesis
-	cd .\build && makeindex 0_thesis.nlo -s nomencl.ist -o 0_thesis.nls
+	cd .\build && makeindex 0_thesis.nlo -s nomencl.ist -o 0_thesis.nls -t 0_thesis.nlg
 	pdflatex -output-directory=build 0_thesis
 ifeq ($(OS),Windows_NT)
 	del thesis.pdf
