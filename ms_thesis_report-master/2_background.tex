@@ -1,23 +1,6 @@
-%\documentclass[11pt]{report}
-%\usepackage{amsmath}
-%\usepackage{algorithm}
-%\usepackage[noend]{algpseudocode}
-%\usepackage[margin=1.5in]{geometry}
-%\usepackage{amsfonts}
-%\usepackage{graphicx}
-%\usepackage{subfig}
-%\usepackage{subfigure}
-%\usepackage{epstopdf}
-%\usepackage[mathscr]{euscript}
-%\makeatletter
-%\newcommand{\INDSTATE}[1][1]{\STATE\hspace{#1\algorithmicindent}}
-% Reinsert missing \algbackskip
-%\makeatother
-
-%\begin{document}	
+	
 	\chapter{Overview on Machine Learning Applied to Satellite Communications}\label{ch:bg}
-%	\gls{apc}
-	%\printglossary[style=long]		
+	
 		\par In this chapter, an overview of the SCaN Testbed Cognitive Engine (CE) is provided. In order to understand and motivate decisions that were made in the initial development, general concepts of machine learning will first be discussed. Then, the work accomplished through NASA's SCaN Testbed project prior to this thesis will be described. After this, topics that are relevant to the improvements introduced to the CE by this thesis will be discussed. Finally, the chapter will be summarized.
 	\section{A General Overview of Machine Learning}\label{bg:introToML}
 	\par With the advent of increasingly more capable and accessible processors, machine learning has become a useful tool in many different fields\cite{MLSurvey_networking} \cite{MLSurvey_medImage} \cite{MLSurvey_general}. This is in part driven by the flexibility and efficiency that machine learning is capable of. There are three major categories of ML algorithms\cite{introToML}: supervised learning, unsupervised learning, and reinforcement learning. Supervised learning takes a set of input values $X$ and a set of target results $Y$ in order to create a mapping $x \to g(x)\to y$. Once the algorithm is trained, this mapping $g(x)$ can be used with new input values $x_{new}$ to predict new target values $y_{new}$. This process is shown in Figure \ref{bg:SupLearnEx}. Unlike supervised learning, unsupervised learning is only given a set of input values $X$. With this set of input values, unsupervised learning attempts to understand the inherent structure within the input values\cite{introToML}. In more general terms, unsupervised learning is attempting to make inferences based on the $X$ given to it. Reinforcement learning is unlike either of the two previously described categories. The primary focus of reinforcement learning is to understand the environment surrounding the learning agent by mapping situations to actions based on maximizing a reward value \cite{rlIntro}. Different supervised learning, where there is an $X$ and $Y$ given to find $g(x)$, reinforcement learning algorithms have $X$ and some knowledge of the reward behavior of the environment $R(x)$, and are trying to choose $X$ in order to get a large $Y$ while simultaneously expanding its knowledge of $R(x)$.  
@@ -176,11 +159,10 @@
 	\begin{align}
 		Q_{k+1}(s_k,a_k) &= Q_k(s_k,a_k) + \alpha[r - Q(s_k,a_k)]. \label{eq:bg_sarsa2}
 	\end{align}
-	\par Beyond $Q(s,a)$, a reward function $r = g(s,a)$ and an exploration policy $a = h(s)$ need \textbf{\textit{[I disagree that an s is needed here since I'm talking about both a reward function and an exploration policy - Max]}} to be defined before a practical model is complete. In the context of the CE, a multitude of functions are relevant to the overall performance of the system. These performance functions may or may not have conflicting responses. The reward function mapping environmental information to performance is a combination of values from these performance functions. The overall result is then represented as a percentage of the maximum possible performance value.   
-	\par In an RL system, a knowledge baseknown as a Q-table is built up. In this Q-table, previous Q-values are mapped to state-action pairs. This table is what gets updated by SARSA. \textbf{\textit{[ Look into relocating this paragraph into another paragraph]}} 
+	\par Based on $Q(s_k,a_k)$, a knowledge base called a Q-table is built up. In this table, previous Q-values are mapped to the state-action pairs that resulted in the Q-values. In SARSA, the value of $Q(s_k,a_k)$ is updated when the action is taken. Beyond $Q(s,a)$, a reward function $r = g(s,a)$ and an exploration policy $a = h(s)$ need to be defined before a practical model is complete. In the context of the CE, a multitude of functions are relevant to the overall performance of the system. These performance functions may or may not have conflicting responses. The reward function mapping environmental information to performance is a combination of values from these performance functions. The overall result is then represented as a percentage of the maximum possible performance value. 
 	
 	\par One of the most important tradeoffs for RL is deciding how much time should be spent exploring the environment versus how much time should be spent exploiting the knowledge already gathered. This is frequently called the Explore-Exploit tradeoff \cite{placeholderCitation}. In the context of SARSA, exploring would represent choosing an unvisited action while exploiting would be choosing an action that has the highest Q value. The exploration policy is responsible for making this decision. This tradeoff is important because exploring too much would create a detailed understanding of the environment but would not actually use the information, while exploiting too much could be using subpar information as the environment is only minimally explored. The preventing of either of these cases becomes an important issue. 
-	\par There are many different approaches to tackling the explore-exploit tradeoff. The simplest one is to use an $\epsilon$-greedy policy \cite{placeholderCitation}. \textit{In this method, an $\epsilon \in (0,1)$ is chosen, which is the probability of choosing a random action. Otherwise, a greedy action based on the Q-table is chosen.\textbf{[ merge into one sentence]}}\cite{placeholderCitation} \textit{$\epsilon$ can be set as a function of time, resulting in more exploration at the beginning of an algorithm, and more exploitation as time goes on and more of the environment is explored.\textbf{[ Reword ]}} Other policies include value-difference based exploration (VBDE), which changes $\epsilon$ based on TD error, as well as Boltzmann exploration, and probability matching \cite{placeholderCitation}. In this work, a time-varying $\epsilon$-greedy policy is used. 
+	\par There are many different approaches to tackling the explore-exploit tradeoff. The simplest one is to use an $\epsilon$-greedy policy \cite{placeholderCitation}. In this method, an  random numbe r$n$ is drawn form $\mathcal{U}(0,1)$. This is compared to $\epsilon \in (0,1)$. If $n<\epsilon$, a random action is chosen. Otherwise, a greedy action based on the Q-table is chosen\cite{placeholderCitation}. $\epsilon$ can be set as a function decreasing over time. This results in more random actions being chosen at the beginning of the running the algorithm and more exploitation of the explored environment as time goes on. Other exploration policies include value-difference based exploration (VBDE) \cite{placeholderCitation}, which changes $\epsilon$ based on TD error, as well as Boltzmann exploration and probability matching \cite{placeholderCitation}. In this work, a time-varying $\epsilon$-greedy policy is used. 
 	\par \textit{\textbf{[discuss where NNs slot in]}}
 	\section{Previous work on NASA SCaN Testbed}
 	\par This section first describes the problem that is trying to be solved by the NASA John H. Glenn Research Center (GRC) Space Communications and Navigation (SCaN) Testbed project \cite{placeholderCitation}. With this foundation, the architecture of the cognitive engine (CE) that was developed will be described as well. Finally, the primary goals of the extension that this thesis is focused on will be described.
