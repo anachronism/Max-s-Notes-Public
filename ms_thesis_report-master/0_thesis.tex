@@ -68,22 +68,26 @@
 \usepackage{epstopdf}
 \usepackage[mathscr]{euscript}
 
-
-%algorithmic wrapping
-\algnewcommand{\parState}[1]{\State%
-  \parbox[t]{\dimexpr\linewidth-\algmargin}{\strut #1\strut}}
-
 %Code settings:
 \usepackage{listings}
 \usepackage{color}
 \usepackage{pdfpages}
 \usepackage{algorithm}
+\usepackage{algpseudocode}
+\makeatletter
+\newcommand{\algmargin}{\the\ALG@thistlm}
+\makeatother
 \usepackage{tabu}
 \usepackage{soul} %For highlighting, can remove later
 % Fix quotes
 \usepackage [english]{babel}
 \usepackage [autostyle, english = american]{csquotes}
 \MakeOuterQuote{"}
+
+
+
+
+
  
 \lstdefinestyle{mystyle}{
     backgroundcolor=\color{backcolour},   
@@ -120,6 +124,10 @@
 % Directory for images
 \graphicspath{ {img/} }
 
+
+%algorithmic wrapping
+\algnewcommand{\parState}[1]{\State\parbox[t]{\dimexpr\linewidth-\algmargin}{\strut #1\strut}}
+\newcommand{\algTab}{\hskip\algorithmicindent}
 \begin{document}
 	% Define \brk as a command for leaving a little vertical space. Makes
 	% the titlepage easier to read - normally, this is NOT GOOD LATEX

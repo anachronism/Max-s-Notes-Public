@@ -258,7 +258,8 @@
 			\State $E^t = \sum^{m^t}(1/m^t) * squaredError($current learner, current data$)$
 			\State At this point, $E^t$ should be a vector with size $m^t$.
 			\For{$i = 1,i<numActiveClassifiers, i++$}
-			\parState Update learner weights: $w_i = 1/m^t * \sum squaredError($current learner, current data$)$
+			\State Update learner weights: \par
+					\algTab\algTab\algTab$w_i = 1/m^t * \sum squaredError($current learner, current data$)$
 			\EndFor
 			\State Normalize learner weights: $D = w \odot (1/\sum w)$
 			\EndIf
@@ -272,7 +273,8 @@
 			\For{$i=1 \to numClassifiers$}
 			\State $\epsilon_i^t = \sum D(i) * squaredError($ current learner, current data$)$
 			\State $\beta_i^t = \epsilon_i^t/(1-\epsilon_k^t) $
-			\parState Compute average of normalized error for $h_i$: $\omega_i^t = 1/(1+exp(-a(t-i-b)))$
+			\State Compute average of normalized error for $h_i$: \par
+					\algTab\algTab\algTab$\omega_i^t = 1/(1+exp(-a(t-i-b)))$
 			\State $\omega_i^t = \omega_i^t / \sum_{j=0}^{t-i} \omega_i^{t-j}$
 			\State $\hat{\beta_i^t} = \sum_{j=0}^{t-i} \omega_k^{t-j} \beta_i^{t-j}$
 			\If{$t>numClassifiers$} 
