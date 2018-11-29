@@ -1,3 +1,19 @@
-\chapter{Conclusion} \label{ch:conclusion}
+\chapter{Conclusion and Future Work} \label{ch:conclusion}
 
 \par Here is where I will summarize what I have done, and update what future steps are.
+\section{intro to conclusion}
+\par In this thesis, a gap present in the 
+\section{Research Achievements}
+\par Based on the current state-of-the-art and the work conducted by \cite{paulo_theory_paper} and \cite{tim_implementation_paper}, there were two main extensions provided by this thesis:
+\begin{itemize}
+	\item \textbf{CE-NSE mitigated some effects of Catastrophic Forgetting, and outperformed the baseline CE:} Cognitive engines for autonomous space communications that address Catastrophic Forgetting were developed and tested onboard the ISS. The performance of both CE-RLM and CE-NSE were compared to the baseline CE-LM implementation tested in \cite{tim_implementation_paper}. CE-NSE proved to provide modest improvements in actions chosen without imposing an unreasonble training time penalty.
+
+	\item \textbf{GANs were determined to not be directly applicable to the CE architecture: } The concept of two networks collaboratively working together was present in both the CE and GANs. However, the low supply of offline training data for the GAN makes it unlikely that any GAN employed would be trained sufficiently to have converged on the proper data distribution. In addition, the GAN would likely have to be supplementary to the RLNN structure, instead of replacing the Explore and Exploit networks. 
+\end{itemize}
+
+\section{Future Work}
+\begin{itemize}
+\item One of the goals that did not have time to be completed was the extension of the CE to MAC layer parameters.  Adding this layer greatly increases the action space possible and the evaluation metrics that must be balanced. Integrating this aspect was deemed too complex for this thesis, but could provide significant imporvements.
+\item The implementation of CE-NSE simply prunes the ensemble of MLPs by getting rid of the oldest one, under the assumption that the oldest MLP will be the least relevant to the current set of data. This assumption is not necessarily correct. Using a smarter pruning method could continue to improve the results of the CE.
+\item CE-NSE uses MSE when evaluating the performance of the individual MLPs in the ensemble. This may not be the best way to evaluate the performance of the MLPs. Instead, a metric more relevant to Satellite Communications may be more relevant.
+\item Pretraining was conducted using a small subset of SNR profiles, in the simplest manner possible. A more prinicipled building of an ensemble (such as training individual networks on different portions of an SNR profile that are common) could provide additional improvements.
