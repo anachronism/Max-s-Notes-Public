@@ -4,7 +4,7 @@
 \section{Software Methods}
 \par The architecture of the CE is independent of the implementation language, and will be described first. Following that, the specific elements of MATLAB implementation and C++ implementation will be explained.
 \subsection{CE Details}
-\par The architecture of the CE follows the SARSA algorithm described in Algorithm \ref{code:bg_SARSA}. A flow diagram illustrating how data passes through the CE is shown in Figure \ref{fig:ceDataFlow}. 
+\par The architecture of the CE follows the SARSA algorithm described in Algorithm \ref{code:bg_SARSA}. A flow diagram illustrating how data passes through the CE is shown in Figure \ref{fig:ceDataFlow}. There are a couple differences between the CE and classic SARSA: the replacement of the Q-table with an MLP and the use of a separate MLP to guide the exploration of the network. The replacement of the Q-table with an MLP transforms the Q learning into a Deep-Q Network.
 \begin{figure}[ht]
 \includegraphics[width=\textwidth]{figures/rough_flow_diagram.eps}
 \caption{placeholder figure for CE block diagram}\label{fig:ceDataFlow}
