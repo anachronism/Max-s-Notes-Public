@@ -17,3 +17,4 @@
 \item The implementation of CE-NSE simply prunes the ensemble of MLPs by getting rid of the oldest one, under the assumption that the oldest MLP will be the least relevant to the current set of data. This assumption is not necessarily correct. Using a smarter pruning method could continue to improve the results of the CE.
 \item CE-NSE uses MSE when evaluating the performance of the individual MLPs in the ensemble. This may not be the best way to evaluate the performance of the MLPs. Instead, a metric more relevant to Satellite Communications may be more relevant.
 \item Pretraining was conducted using a small subset of SNR profiles, in the simplest manner possible. A more prinicipled building of an ensemble (such as training individual networks on different portions of an SNR profile that are common) could provide additional improvements.
+\end{itemize}
