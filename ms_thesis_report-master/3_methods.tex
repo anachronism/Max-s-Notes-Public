@@ -64,6 +64,7 @@ This uses a GNU General Public License (GPL), but as the MATLAB code has no driv
 \par Finally, the Boost.Serialization \cite{placeholderCitation} library was chosen for saving/resuming CE states. 
 \begin{figure}
 \caption{[baseline implementation, get figure 2 from Tim's paper]}
+\includegraphics{figures/Placeholder.png}
 \label{fig:timOutlineBlocks}
 \end{figure}
 \par A block diagram of the CE is shown in Figure \ref{fig:timOutlineBlocks}. The external drivers interact with the Viasat DVB-S2 modem (for getting $E_s/N_o$ values), \textit{the ML-605 BPSK transmitter (for sending new actions to the space DVB-S2 transmitter), and the Advanced Radio for Cognitive Communications (ARCC) platform created by NASA for initial ground testing. \textbf{[split up these two parts (because they aren't used together), and include ethernet driver]}} The CE being tested resides in the RLNN Core section. The description of the RLNN Core will be split into three parts: the baseline method used in 2017, \textit{the RLM changes \textbf{[ rephrase]}}, and the \textit{Learn++.NSE changes\textbf{[ Rephrase ]}}.

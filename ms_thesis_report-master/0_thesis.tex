@@ -68,6 +68,11 @@
 \usepackage{epstopdf}
 \usepackage[mathscr]{euscript}
 
+
+%algorithmic wrapping
+\algnewcommand{\parState}[1]{\State%
+  \parbox[t]{\dimexpr\linewidth-\algmargin}{\strut #1\strut}}
+
 %Code settings:
 \usepackage{listings}
 \usepackage{color}
