@@ -135,7 +135,6 @@ class RLNNCognitiveEngine {
 		int chooseAction();
 		void recordResponse(int actionID, const arma::rowvec &measurementVec);
 
-		//void loadPreviousRun(Archive & ar, const unsigned int version);
 		void saveCurrentRun(std::string filename) {
 			//save nn weights
 			nnExplore.saveCurrentRun(filename + "_nnExplore" + ".txt");
@@ -148,11 +147,11 @@ class RLNNCognitiveEngine {
 			appSpecObj.saveCurrentRun(filename + "_appSpecObj" + ".txt");
 
 			std::ofstream ofs(filename + "_RLNNCogEng" ".txt");
-			//save data to archvie
+			//save data to archive
 			boost::archive::text_oarchive oa(ofs);
 			//write class instance to archive
 			oa & *this;
-			//archive and stream closed with destructors are called
+			//archive and stream closed when destructors are called
 		};
 
 		void loadOldRun(std::string filename) {
@@ -160,16 +159,16 @@ class RLNNCognitiveEngine {
 			boost::archive::text_iarchive ia(ifs);
 			//read class state from archive
 			ia & *this;
-			//archive and stream closed with destructors are called.
+			//archive and stream closed when destructors are called.
 
 			//load nn weights
 			nnExplore.loadOldRun(filename + "_nnExplore" + ".txt");
 			for(int i=0; i<nnExploit.size(); i++) {
 				nnExploit[i]->loadOldRun(filename + "_nnExploit_" + std::to_string(i) + ".txt");
 			}
-			//save training buffers
+			//load training buffers
 			trBuf.loadOldRun(filename + "_trBuf" + ".txt");
-			//save app specific vars
+			//load app specific vars
 			appSpecObj.loadOldRun(filename + "_appSpecObj" + ".txt");			
 		}
 
@@ -222,13 +221,7 @@ class RLNNCognitiveEngine {
 
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(RLNNCognitiveEngine)
 
-/*std::ostream & operator<<(std::ostream &os, RLNNCognitiveEngine &rlnnCogEng) {
-	return os << rlnnCogEng._epsilon << rlnnCogEng._epsilonIter << rlnnCogEng._nnTrained << rlnnCogEng._firstExploreAfterNNTrained
-				<< rlnnCogEng._fitObservedMax << rlnnCogEng._lastExploitFitObserved << rlnnCogEng._nnExploreInputs << rlnnCogEng._nnExploitInputs << rlnnCogEng._exploitFlag
-				<<rlnnCogEng._nnExploreWeights << rlnnCogEng._nnExploitWeights;
-}*/
-
-
+// Initialization
 RLNNCognitiveEngine::RLNNCognitiveEngine(const CogEngParams & inpParams)
 #if NSE==1
 : 	nnExplore(inpParams.nnExplore_nNets,inpParams.nnExplore_inputVectorSize,inpParams.nnExplore_hiddenLayerSizes,inpParams.nnExplore_outputVectorSize,inpParams.sigmoidSlope,inpParams.sigmoidThresh,inpParams.errorThresh),
@@ -280,6 +273,7 @@ RLNNCognitiveEngine::RLNNCognitiveEngine(const CogEngParams & inpParams)
 
 	//NeuralNetworkPredictors
 	//configure RMS prop for nnExplore
+	/*******TODO: Check if RMSProp is actually used at any point******/
 	nnExplore.initializeRMSProp(inpParams.nnExplore_rmsProp_stepSize,
 							 inpParams.nnExplore_rmsProp_alpha,
 							 inpParams.nnExplore_rmsProp_eps,
@@ -326,7 +320,6 @@ RLNNCognitiveEngine::RLNNCognitiveEngine(const CogEngParams & inpParams)
 							 );		
 		nnExploit.push_back(pNNExploit);
 
-		// NeuralNetworkPredictor<TwoLayerNetwork,optimization::RMSprop> * pNNExploitTrainer =
 		#if NSE == 1
 		LearnNSEPredictor<TwoLayerNetwork,optimization::RMSprop> * pNNExploitTrainer =
 			new LearnNSEPredictor<TwoLayerNetwork,optimization::RMSprop>(//new NeuralNetworkPredictor<TwoLayerNetwork,optimization::RMSprop>(
@@ -361,6 +354,7 @@ RLNNCognitiveEngine::RLNNCognitiveEngine(const CogEngParams & inpParams)
 
 }
 
+// Logic to select action in cognitive engine.
 int RLNNCognitiveEngine::chooseAction() {
 	double eProb;
 	arma::mat predictions;
@@ -381,17 +375,21 @@ int RLNNCognitiveEngine::chooseAction() {
 	if(_nnTrained && !_forceExplore) {
 		eProb = math::Random();
 		if(eProb <= _epsilon) { //exploration mode
+			
 			//generate the input vectors for prediction
 			std::cout << "Exploring" << std::endl;
 			#ifdef LOGGING
 			logFile << "::Action Type: Exploring " << std::endl;
 			#endif
 			appSpecObj.genNNExploreInputs(_nnExploreInputs);
+			
 			//predict using input vectors. returns mean of all
 			//parallel nets
 			nnExplore.predict(_nnExploreInputs, predictions);
+			
 			//calculate current max threshold
 			perfThresh = predictions.max() * (_nnExploreMaxPerfThresh);
+			
 			//if first explore after NN trained, then choose max perf.
 			//randomly choose one of the actions (based on rejection rate)
 			//and perfThresh
@@ -399,11 +397,10 @@ int RLNNCognitiveEngine::chooseAction() {
 				std::cout << "Random Explore" << std::endl;
 				actionID = predictions.index_max();
 				_firstExploreAfterNNTrained = false;
-			} else {
+			} 
+			else {
 				arma::uvec idxsLessThresh = arma::find(predictions < perfThresh);
 				arma::uvec idxsGreatThresh = arma::find(predictions >= perfThresh);
-				//std::cout << "idxs: " << idxsLessThresh.n_elem << " " << idxsGreatThresh.n_elem << std::endl;			
-
 				//check edge case: if true, randomly choose (as they are all in the same
 				//subset). else choose off of rejection rate.
 				if((idxsLessThresh.n_elem==0) || (idxsGreatThresh.n_elem==0)) {
@@ -414,14 +411,13 @@ int RLNNCognitiveEngine::chooseAction() {
 					}				
 				} else {
 					if(math::Random() >= _nnRejectionRate) {
-						//std::cout << "Less Than Threshold Explore" << std::endl;
+						//choose action worse than _nnRejectionRate
 						int idx = idxsLessThresh.n_elem;
 						while(idx >= idxsLessThresh.n_elem) {
 							idx = (int) floor((double) idxsLessThresh.n_elem*math::Random());
 						}
 						actionID = idxsLessThresh(idx);
-					} else { //choose action better than perfThresh
-						//std::cout << "Greater Than Threshold Explore" << std::endl;
+					} else { //choose action better than _nnRejectionRate
 						int idx = idxsGreatThresh.n_elem;
 						while(idx >= idxsGreatThresh.n_elem) {
 							idx = (int) floor((double) idxsGreatThresh.n_elem*math::Random());
@@ -431,24 +427,21 @@ int RLNNCognitiveEngine::chooseAction() {
 				}
 			}
 			_exploitFlag = false;
-		} else { //exploit mode
+		} 
+		else { //exploit mode
 			//generate the input vectors for prediction
 			std::cout << "Exploiting" << std::endl;
 			#ifdef LOGGING
 			logFile << "::Action Type: Exploiting " << std::endl;
 			#endif
 			appSpecObj.genNNExploitInputs(_nnExploitInputs);
+			
 			//predict using input vectors. returns mean of all
 			//parallel nets
-			//std::cout << "nnExploit Inputs: " << _nnExploitInputs << std::endl;
-			//std::cout << "nnExploit Outputs: " << std::endl;
-			//std::cout << "nnExploit.size(): " << nnExploit.size() << std::endl;
 			for(int i=0; i<nnExploit.size(); i++) {
 				nnExploit[i]->predict(_nnExploitInputs, predictions);
 				predictedActionVec.push_back(predictions);
-				std::cout<<"F1: " << predictions << std::endl;
 			}
-			//std::cout << std::endl;
 			//the outputs of the nn's are processed using the application
 			//specific object and the actionID corresponding to their outputs
 			//is returned back.
@@ -456,9 +449,9 @@ int RLNNCognitiveEngine::chooseAction() {
 
 			_exploitFlag = true;
 		}
-	} else {
+	} 
+	else { //If reset or if first history buffer
 		//choose random action
-
 		if(_currentlyTraining) {
 			#ifdef LOGGING
 			logFile << "::Action Type: Exploiting " << std::endl;
@@ -482,32 +475,25 @@ int RLNNCognitiveEngine::chooseAction() {
 		}
 	}
 
-/*
-	#ifdef LOGGING
-	logFile << "Action Chosen: " << actionID << std::endl;
-	if(_exploitFlag) {
-		logFile << "Action Type: " << "Exploit" << std::endl;
-	} else {
-		logFile << "Action Type: " << "Explore" << std::endl;
-	}
-	#endif
-*/
 	return actionID;
 
 }
-
+// Logic for interpreting the evaluation metrics that are received. 
+// Also encompassses training when history buffer is full.
 void RLNNCognitiveEngine::recordResponse(int actionID, const arma::rowvec &measurementVec) {
 	bool bufferFull;
 	arma::rowvec fitParams;
 	arma::colvec outVec;
 	double fitObserved;
 	static  boost::posix_time::ptime trainStartTime,trainEndTime;
+	
 	//process and save measurements from receiver
 	appSpecObj.processMeasurements(measurementVec);
 
 	//compute new fitness observed
 	appSpecObj.getFitnessParams(fitParams);
-	//ONLY HERE FOR DEMO PURPOSES!!!
+	
+	//This cout is here for demonstration purposes.
 	std::cout << "Normalized Objective Scores:" << std::endl;
 	std::cout << "Throughput: " << fitParams(0) << std::endl;
 	std::cout << "BER: " << fitParams(1) << std::endl;
@@ -515,13 +501,10 @@ void RLNNCognitiveEngine::recordResponse(int actionID, const arma::rowvec &measu
 	std::cout << "Spectral Efficiency: " << fitParams(3) << std::endl;
 	std::cout << "TX Power Efficiency: " << fitParams(4) << std::endl;
 	std::cout << "DC Power Consumed: " << fitParams(5) << std::endl;
-	//std::cout << "fitParams" << std::endl;
-	//std::cout << fitParams << std::endl;
 	fitObserved = arma::dot(_fitnessWeights,fitParams);
 	std::cout << "Multiobjective Fitness Score: " << fitObserved << std::endl;
 
 	#ifdef LOGGING
-//	logFile << boost::posix_time::microsec_clock::local_time() << std::endl;
 	logFile << "::Objective Fitnesses Observed: ";
 	logFile << fitParams;
 	logFile << "::Fitness Observed: " << fitObserved <<std::endl;
@@ -543,20 +526,15 @@ void RLNNCognitiveEngine::recordResponse(int actionID, const arma::rowvec &measu
 	//update nnExploit input whenever exploration finds a better performance
 	if(fitObserved >= _fitObservedMax) { //we found a new performance maximum
 		std::cout << "We found a new fObserved max." << std::endl;
-//		#ifdef LOGGING
-//		logFile << boost::posix_time::microsec_clock::local_time() << std::endl;
-//		logFile << "::New Max Fitness Observed" <<std::endl;
-//		logFile << std::endl;
-//		#endif
 		_fitObservedMax = fitObserved;
 		if(!_exploitFlag) {
 			appSpecObj.updateNNExploitInputs();
 		}
-	} else { //not a maximum
-//		std::cout << "We found a worse fObserved." << std::endl;
+	} 
+	else { //not a max observed fitness score
 		if(_exploitFlag) {
 			if(fitObserved<_lastExploitFitObserved) {
-				//Reset "More Efficient Mode". Threshold value is a designer parameter (0.5 for specific missions, 0.1 for general)
+				//Reset "More Efficient Mode". Threshold value is a hyperparameter (0.5 for specific missions, 0.1 for general)
 				if(  (((_lastExploitFitObserved-fitObserved)>_forceExploreThreshold) &&
 					 (appSpecObj.lastAndNewNNExploitInputEqual()) &&
 					 (appSpecObj.lastNNExploitInputEmpty()==false)) 
@@ -564,18 +542,16 @@ void RLNNCognitiveEngine::recordResponse(int actionID, const arma::rowvec &measu
 					 (((_histRollBackCnt>=trBuf.getBufferSize()) &&
 					 (appSpecObj.lastAndNewNNExploitInputEqual()) &&
 					 (appSpecObj.lastNNExploitInputEmpty()==false))) 
-
 					&& (!_currentlyTraining)
 				  ) {
-				  	//std::cout <<"HERE1"<<std::endl;
-				  	_forceExplore = 1; //enter explore mode
+				  	_forceExplore = 1; //enter forced explore mode
 				  	_fitObservedMax = 0; //reset max tracking
 				  	trBuf.resetBuffer(); //reset NN history
 				  	_histRollBackCnt = 0;
 				}
-				// Quick "recover mode" using performances from the buffer.  Triggers when 90% below previous exploration level
-				else if (fitObserved < _lastExploitFitObserved*0.9 || /*fitObserved < _fitObservedMax*0.9*/ fitObserved < appSpecObj.getRollBackThreshold()) {
-					//std::cout <<"HERE2"<<std::endl;
+				// Quick "recover mode" using performances from the buffer.  
+				//Triggers when 90% below previous exploration level
+				else if (fitObserved < _lastExploitFitObserved*0.9 ||  fitObserved < appSpecObj.getRollBackThreshold()) {
 					_histRollBackIdx++; //increment ptr
 					_histRollBackCnt++;
 					if(_histRollBackIdx==(trBuf.getBufCntr()-1)) { //wrap ptr around
@@ -597,7 +573,6 @@ void RLNNCognitiveEngine::recordResponse(int actionID, const arma::rowvec &measu
 				}
 				//accepts new exploitation peformance 90% above last exploittation threshold
 				else if(fitObserved > _lastExploitFitObserved*0.9 && _histRollBackIdx>-1) {
-					//std::cout <<"HERE3"<<std::endl;
 					_lastExploitFitObserved = fitObserved;
 					appSpecObj.updateLastNNExploitInputs();
 				  	_histRollBackCnt = 0;
@@ -609,8 +584,8 @@ void RLNNCognitiveEngine::recordResponse(int actionID, const arma::rowvec &measu
 					appSpecObj.rollBackExploitInputs();
 				  	_histRollBackCnt = 0;
 				}
-			} else { //update last exploitation performance
-				//std::cout <<"HERE5"<<std::endl;
+			} 
+			else { //update last exploitation performance
 				_lastExploitFitObserved = fitObserved;
 				appSpecObj.updateLastNNExploitInputs();
 				_histRollBackCnt = 0;
@@ -618,24 +593,12 @@ void RLNNCognitiveEngine::recordResponse(int actionID, const arma::rowvec &measu
 		}
 	}
 
-		//	if(fitObserved < _lastExploitFitObserved) {
-		//		appSpecObj.rollBackExploitInputs();
-		//	} else {
-		//		_lastExploitFitObserved = fitObserved;
-		//		appSpecObj.updateLastNNExploitInputs();
-		//	}
-		//}
-	//}
-
 	//push action/result into training data buffer
 	appSpecObj.genTrainingSample(outVec);
 	bufferFull = trBuf.addTrainingSample(actionID, outVec);
 
-	//train NNs
+	//train NNs if history buffer is full.
 	if(bufferFull) {
-
-//		if(_nnTrained==true && _forceExplore==false) {
-//		if(false) {
 		if(true) {
 			if(!_currentlyTraining) {
 				std::cout << "Training Occurring" << std::endl;
@@ -663,34 +626,16 @@ void RLNNCognitiveEngine::recordResponse(int actionID, const arma::rowvec &measu
 				tTrainingVec.push_back(std::thread ([this,nnInputs,nnOutputs](){
 					
 					//TRAIN NN_EXPLORE
-					//std::cout << "Training NN Explore" << std::endl;
-					//nnExploreTrainer.train(shuffledTrainData,shuffledTrainLabels,
 					nnExploreTrainer.train((*nnInputs)[0],(*nnOutputs)[0],_trainFrac);			
-					//nnExplore.train((*nnInputs)[0],(*nnOutputs)[0],_trainFrac);		
 						
 					//train NN array
-					//std::cout << "Training NN Exploit" << std::endl;
 					for(int i=0; i<nnExploit.size(); i++) {
 						nnExploitTrainer[i]->train((*nnInputs)[1],(*nnOutputs)[1].row(i),_trainFrac);
-						// #ifdef LOGGING 
-						// logFile<< "Train complete "<<i<<std::endl;
-						// #endif
-						//nnExploit[i]->train((*nnInputs)[1],(*nnOutputs)[1].row(i),_trainFrac);
 					}
-					// #ifdef LOGGING 
-					// logFile<< "Training complete"<<std::endl;
-					// #endif
-					// trainEndTime =  boost::posix_time::microsec_clock::local_time();
-					// #ifdef LOGGING
-					// 	debugLogFile << "::Total Training Time: "<< trainEndTime-trainStartTime <<std::endl;
-					// #endif
 					_trainingComplete = true;
 				}));
 
 			}
-			//join thread
-			//tTraining.join();
-
 			if(_trainingComplete) {
 				//join thread
 				tTrainingVec[0].join();
@@ -719,7 +664,6 @@ void RLNNCognitiveEngine::recordResponse(int actionID, const arma::rowvec &measu
 
 				#ifdef LOGGING
 				logFile << "::Training: Yes" <<std::endl;
-				//debugLogFile <<"::Training: ";
 				#endif
 			}
 		}	
@@ -728,201 +672,5 @@ void RLNNCognitiveEngine::recordResponse(int actionID, const arma::rowvec &measu
 		logFile << "::Training: No" <<std::endl;
 		#endif
 	}
-
-/*	#ifdef LOGGING
-	logFile << "NN Training Occurred: " << bufferFull << std::endl;
-	#endif
-*/
 }
 
-//void RLNNCognitiveEngine::loadPreviousRun(Archive & ar, const unsigned int version) {
-//
-//}
-
-
-/*
-int main() {
-	int actionID;
-
-	arma::mat actionList;
-
-	//---------------------------------------------------//
-	//input parameters
-	std::cout<<"Setting Cog Engine Parameters" << std::endl;
-	CogEngParams cogEngParams;
-	arma::rowvec fitnessWeights = {1.0/6.0, 1.0/6.0, 1.0/6.0,
-									1.0/6.0, 1.0/6.0, 1.0/6.0};
-
-	//RLNNCognitiveEngine Params
-	cogEngParams.cogeng_epsilonResetLim = 4e-3;
-	cogEngParams.cogeng_nnExploreMaxPerfThresh = 0.9;
-	cogEngParams.cogeng_nnRejectionRate = 0.95;
-	cogEngParams.cogeng_trainFrac = 0.9;
-	cogEngParams.cogeng_pruneFrac = 0.5;
-	cogEngParams.cogeng_fitnessWeights = fitnessWeights;
-
-	//NeuralNetworkPredictor Params
-	cogEngParams.nnExplore_nNets = 20;
-	cogEngParams.nnExplore_inputVectorSize = 7;
-	cogEngParams.nnExplore_hiddenLayerSizes.push_back(7);
-	cogEngParams.nnExplore_hiddenLayerSizes.push_back(50);	
-	cogEngParams.nnExplore_outputVectorSize = 1;
-	cogEngParams.nnExplore_rmsProp_stepSize = 0.01;
-	cogEngParams.nnExplore_rmsProp_alpha = 0.88;
-	cogEngParams.nnExplore_rmsProp_eps = 1e-8;
-	cogEngParams.nnExplore_rmsProp_maxEpochs = 10;
-	cogEngParams.nnExplore_rmsProp_tolerance = 1e-18;
-	cogEngParams.nnExplore_rmsProp_shuffle = true;
-	cogEngParams.nnExploit_nNets = 10;
-	cogEngParams.nnExploit_inputVectorSize = 7;
-	cogEngParams.nnExploit_hiddenLayerSizes.push_back(20);	
-	cogEngParams.nnExploit_outputVectorSize = 1;
-	cogEngParams.nnExploit_rmsProp_stepSize = 0.01;
-	cogEngParams.nnExploit_rmsProp_alpha = 0.88;
-	cogEngParams.nnExploit_rmsProp_eps = 1e-8;
-	cogEngParams.nnExploit_rmsProp_maxEpochs = 10;
-	cogEngParams.nnExploit_rmsProp_tolerance = 1e-18;
-	cogEngParams.nnExploit_rmsProp_shuffle = true;
-	//Application Specific Object Params
-	cogEngParams.nnAppSpec_nOutVecFeatures = 8;
-	cogEngParams.nnAppSpec_frameSize = 16200.0;
-	cogEngParams.nnAppSpec_maxEsN0 = 12.93; //dB
-	cogEngParams.nnAppSpec_maxBER = pow(10,-12);
-	cogEngParams.nnAppSpec_modList <<4<<4<<4<<4<<4<<4<<4<<4<<4
-								  <<4<<4<<8<<8<<8<<8<<8<<8
-								  <<16<<16<<16<<16<<16<<16
-								  <<32<<32<<32<<32<<32
-								  <<arma::endr;
-	cogEngParams.nnAppSpec_codList <<(1.0/4.0)<<(1.0/3.0)<<(2.0/5.0)<<(1.0/2.0)
-									<<(3.0/5.0)<<(2.0/3.0)<<(3.0/4.0)<<(4.0/5.0)
-									<<(5.0/6.0)<<(8.0/9.0)<<(9.0/10.0)
-									<<(3.0/5.0)<<(2.0/3.0)<<(3.0/4.0)<<(5.0/6.0)
-									<<(8.0/9.0)<<(9.0/10.0)
-								  	<<(2.0/3.0)<<(3.0/4.0)<<(4.0/5.0)<<(5.0/6.0)
-								  	<<(8.0/9.0)<<(9.0/10.0)
-								  	<<(3.0/4.0)<<(4.0/4.0)<<(5.0/6.0)<<(8.0/9.0)
-								  	<<(9.0/10.0)
-								  	<<arma::endr;
-	cogEngParams.nnAppSpec_rollOffList << 0.2 << 0.3 << 0.35<<arma::endr;
-	double RsMin = 0.5*pow(10,6)/(1+cogEngParams.nnAppSpec_rollOffList.min());//0.5
-	double RsMax = 5*pow(10,6)/(1+cogEngParams.nnAppSpec_rollOffList.max());
-	cogEngParams.nnAppSpec_symbolRateList = arma::trans(arma::regspace(RsMin,0.1*pow(10,6),RsMax)); //0.1MHz spacing
-	cogEngParams.nnAppSpec_transmitPowerList = arma::trans(arma::regspace(0.0,1.0,10.0)); //1.0 dB spacing
-	//TrainingDataBuffer Params
-	cogEngParams.buf_nTrainTestSamples = 200;
-
-	actionList.set_size(6,cogEngParams.nnAppSpec_symbolRateList.n_elem
-							*cogEngParams.nnAppSpec_transmitPowerList.n_elem
-							*cogEngParams.nnAppSpec_modList.n_elem
-							*cogEngParams.nnAppSpec_rollOffList.n_elem);
-	int id = 0;
-	for(int i1=0; i1<cogEngParams.nnAppSpec_symbolRateList.n_elem; i1++) {
-		for(int i2=0; i2<cogEngParams.nnAppSpec_transmitPowerList.n_elem; i2++) {
-			for(int i3=0; i3<cogEngParams.nnAppSpec_modList.n_elem; i3++) {
-				for(int i4=0; i4<cogEngParams.nnAppSpec_rollOffList.n_elem; i4++) {
-						actionList(0,id) = cogEngParams.nnAppSpec_symbolRateList(i1);
-						actionList(1,id) = cogEngParams.nnAppSpec_transmitPowerList(i2);
-						actionList(2,id) = (double)i3; //modcod id
-						actionList(3,id) = cogEngParams.nnAppSpec_rollOffList(i4);
-						id++;
-				}
-			}
-		}
-	}
-	for(int i=0; i<actionList.n_cols; i++) {
-		actionList(4,i) = (double) cogEngParams.nnAppSpec_modList((int)actionList(2,i));
-		actionList(5,i) = cogEngParams.nnAppSpec_codList((int)actionList(2,i));
-		actionList(2,i) = log2(actionList(4,i));
-	}
-
-
-	cogEngParams.buf_actionList = actionList;
-
-	//---------------------------------------------------//
-	//instantiate cog engine
-	std::cout<<"Instantiating Cog Engine" << std::endl;
-	RLNNCognitiveEngine rlnnCogEng(cogEngParams);
-
-	//choose an action
-	arma::rowvec measurementVec(6);
-	int i=0;
-	for(int i=0; i<20000; i++) {
-		std::cout<<i<<": Choosing Action"<<std::endl;
-		actionID = rlnnCogEng.chooseAction();
-		std::cout<<i<<": Action Chosen: " << actionID << std::endl;
-
-		//apply action to environment
-		measurementVec(0) = 6; //5.5-6.5 dB + transmit power
-		measurementVec(1) = actionList(1,actionID); //tx power
-		measurementVec(2) = actionList(0,actionID); //Rs
-		measurementVec(3) = actionList(3,actionID); //rolloff
-		measurementVec(4) = actionList(4,actionID); //mod
-		measurementVec(5) = actionList(5,actionID); //cod
-		//we don't need to measure log2(M) since we have M.
-		std::cout <<i<<": measurementVec: " << std::endl;
-		std::cout << measurementVec << std::endl;
-
-		//record response of environment
-		rlnnCogEng.recordResponse(actionID, measurementVec);
-	}
-}
-
-8/
-/*int main() {
-	int actionID;
-
-	//---------------------------------------------------//
-	//input parameters
-	CogEngParams cogEngParams;
-	arma::mat actionList(6,500,arma::fill::randu);
-
-
-
-	arma::rowvec fitnessWeights = {0.25, 0.25, 0.25, 0.25};
-
-	//RLNNCognitiveEngine Params
-	cogEngParams.cogeng_epsilonResetLim = 4e-3;
-	cogEngParams.cogeng_nnPerfThresh = 0.5; //0.65
-	cogEngParams.cogeng_nnRejectionRate = 1;
-	cogEngParams.cogeng_learningRateAlphaResetLim = 1e-3;
-	cogEngParams.cogeng_trainFrac = 0.9;
-	cogEngParams.cogeng_pruneFrac = 0.5;
-
-	//NeuralNetworkPredictor Params
-	cogEngParams.nn_nNets = 100;
-	cogEngParams.nn_hiddenLayerSize = 6;
-	cogEngParams.nn_outputVectorSize = 1;
-	cogEngParams.nn_setAlwaysChooseMinNN = true;
-
-	cogEngParams.nn_rmsProp_stepSize = 0.01;
-	cogEngParams.nn_rmsProp_alpha = 0.88;
-	cogEngParams.nn_rmsProp_eps = 1e-8;
-	cogEngParams.nn_rmsProp_maxEpochs = 10;
-	cogEngParams.nn_rmsProp_tolerance = 1e-18;
-	cogEngParams.nn_rmsProp_shuffle = true;
-	//Reinforcement Learner Params
-	cogEngParams.rl_nPerfValues = 200;
-	cogEngParams.rl_fitnessWeights = fitnessWeights;
-	cogEngParams.rl_rewardThreshold = 0;
-	//TrainingDataBuffer Params
-	cogEngParams.buf_nTrainTestSamples = 100;
-	cogEngParams.buf_actionList = actionList;
-
-	//---------------------------------------------------//
-	//instantiate cog engine
-	RLNNCognitiveEngine rlnnCogEng(cogEngParams);
-	arma::rowvec fitParams(4);
-
-	//choose an action
-	for(int i=0; i<21600; i++) {
-		actionID = rlnnCogEng.chooseAction();
-		std::cout << "Action Chosen: " << actionID << std::endl;
-
-		//apply action to environment
-		fitParams.randu();
-
-		//record response of environment
-		rlnnCogEng.recordResponse(actionID,fitParams);
-	}
-}
-*/
