@@ -1,5 +1,3 @@
-//TODO:
-///(1.) Remove testing set from NN.  Just have training set.
 
 #include <mlpack/core.hpp>
 
@@ -37,11 +35,6 @@
 #include <boost/serialization/serialization.hpp>
 
 #include <iostream>
-
-// #ifndef LOGGING
-// #define LOGGING
-// #endif
-
 using namespace mlpack;
 
 namespace boost {
@@ -50,6 +43,8 @@ class access;
 }
 }
 
+/******Helper functions, external of LearnNSEPredictor class*****/
+// Circular shift used in circular buffer calculations.
 void circularShift(arma::rowvec vecToShift,arma::rowvec& retVec, int shiftNum){
 	
 	// #ifdef LOGGING
@@ -62,6 +57,7 @@ void circularShift(arma::rowvec vecToShift,arma::rowvec& retVec, int shiftNum){
 	}
 }
 
+// MSE calculation.
 arma::rowvec squaredError(arma::rowvec vector1, arma::rowvec vector2){
 	arma::rowvec err = vector1 - vector2;
 	return err % err;
@@ -112,7 +108,7 @@ class LearnNSEPredictor {
 		std::vector<FeedForwardNetwork *> nnFFNVec;
 };
 
-
+// Class Initialization
 template <class NetType, template <class T> class OptType>
 LearnNSEPredictor<NetType,OptType>::LearnNSEPredictor(int nNets, 
 													int inputVectorSize, 
@@ -131,6 +127,7 @@ LearnNSEPredictor<NetType,OptType>::LearnNSEPredictor(int nNets,
 	errThresh = errThreshTmp;
 	beta = arma::ones(nNets,nNets);
 	netWeights = arma::ones(nNets); 
+	
 	// Intiialize list of networks.
 	for(int i=0; i<nNets; i++) {
 		NetType * t = new NetType(inputVectorSize,hiddenLayerSize,outputVectorSize);
@@ -180,7 +177,7 @@ LearnNSEPredictor<NetType,OptType>::LearnNSEPredictor(int nNets,
 		}	
 	}
 }
-
+// Initialization of RMSProp necessary for using MLPacks network. Never actually used.
 template <class NetType, template <class T> class OptType>
 void LearnNSEPredictor<NetType,OptType>::initializeRMSProp(double stepSize, double alpha, double eps, size_t maxIterations, double tolerance, bool shuffle) {
 	for(int i=0; i<_opts.size(); i++) {
@@ -193,6 +190,7 @@ void LearnNSEPredictor<NetType,OptType>::initializeRMSProp(double stepSize, doub
 	}
 }
 
+// Train Ensemble
 template <class NetType, template <class T> class OptType>
 void LearnNSEPredictor<NetType,OptType>::train(const arma::mat &trainData, const arma::mat &trainLabels, double trainDataFrac){
 	arma::mat prediction,prediction_eval,prediction_tmp;
@@ -200,7 +198,7 @@ void LearnNSEPredictor<NetType,OptType>::train(const arma::mat &trainData, const
 	arma::mat shuffledTrainLabels;
 	arma::mat shuffledValData;
 	arma::mat shuffledValLabels;
-	arma::colvec Dt,Bt_sampBySamp,Dt_sampBySamp, Wt, Wt_sampBySamp;
+	arma::colvec Bt_sampBySamp,Dt_sampBySamp, Wt_sampBySamp;
 	arma::colvec weightsCol;
 	arma::colvec omega;
 	arma::rowvec omega_trans;
@@ -209,7 +207,6 @@ void LearnNSEPredictor<NetType,OptType>::train(const arma::mat &trainData, const
 	arma::colvec netWeightsTmp;
 
 	netWeightsTmp.set_size(arma::size(netWeights));
-	// arma::colvec b;
 	arma::colvec sigSlopeVec,b,mseInit;
 	double Bt, Et;
 	double epsilon_tk,beta_hat;
@@ -221,9 +218,7 @@ void LearnNSEPredictor<NetType,OptType>::train(const arma::mat &trainData, const
 		firstTrainingBatch = true;
 	else 
 		firstTrainingBatch = false;
-	// #ifdef LOGGING
-	// 	debugLogFile << "Training.";
-	// #endif
+	
 	//resize shuffle buffers
 	shuffledTrainData.set_size(trainData.n_rows,
 		(int) floor(trainData.n_cols * trainDataFrac));
@@ -233,6 +228,7 @@ void LearnNSEPredictor<NetType,OptType>::train(const arma::mat &trainData, const
 		(int) (trainData.n_cols - floor(trainData.n_cols * trainDataFrac)));
 	shuffledValLabels.set_size(trainLabels.n_rows,
 		(int) (trainLabels.n_cols - floor(trainLabels.n_cols * trainDataFrac)));
+	
 	//shuffle data and split into train/val sets
 	arma::colvec shuffledOrder = arma::regspace(0,1,trainData.n_cols -1);
 	shuffledOrder = arma::shuffle(shuffledOrder);
@@ -251,21 +247,15 @@ void LearnNSEPredictor<NetType,OptType>::train(const arma::mat &trainData, const
 
   //if net.initialized == false, net.beta = []; end
 	mt = shuffledTrainData.n_cols; 
-	// logFile << "mt = "<< mt <<"N cols: "<<shuffledTrainData.n_cols<<std::endl;
+	Dt_sampBySamp = arma::ones<arma::colvec>(mt)/mt;
 
-	Dt = arma::ones<arma::colvec>(mt)/mt; // Initialize instance weight distribution.
-	Dt_sampBySamp = Dt;
-
+	//If this isn't the first network.
 	if(initialized){
-		// #ifdef LOGGING
-		// 	logFile << "F3" <<std::endl;
-		// #endif
-		// Step 1: COmpute error of existing ensemble on new data.
+		// Step 1: Compute error of existing ensemble on new data.
 		predict(shuffledTrainData,prediction);
 		//compute mean squared error
-		//mseInit = calcMSE(testLabels,prediction);
 		mseInit = squaredError(prediction,shuffledTrainLabels) / shuffledTrainData.n_cols;
-		//logFile << squaredError(prediction,shuffledTrainLabels) << "  ";
+		
 		Et = arma::accu(mseInit);
 		// Get beta for each network.
 		Bt = Et / (1-Et);
@@ -273,43 +263,27 @@ void LearnNSEPredictor<NetType,OptType>::train(const arma::mat &trainData, const
 		if(Bt == 0) Bt = 1/mt;
 
 		//Update and normalize instance weights.
-		Wt = 1/mt * Bt;
-		Dt = Wt/arma::accu(Wt);
-		Wt_sampBySamp = 1/mt * Bt_sampBySamp;
-		// Dt_sampBySamp = Wt_sampBySamp/arma::accu(Wt_sampBySamp);
-		// #ifdef LOGGING
-		// 	logFile << "F4" <<std::endl;
-		// #endif
+		Wt_sampBySamp = 1/mt * Bt_sampBySamp;		
 	}
 
-	// Step 2: Create new classifier
+	// Step 2: Create new Predictor
+	// If the ensemble isn't full, just use first unused FFNN. Otherwise, cycle through overwriting the oldest.
 	if (firstTrainingBatch)
 		netInd = trainingCounter;
 	else
-		netInd = trainingCounter % nNets; //*****MAYBE WORK ON PROPER PRUNING*****//
+		netInd = trainingCounter % nNets; 	
 	
 	arma::mat weightsMat;
 	exportWeights(weightsMat);
-	//logFile <<"F2: EXPORTED WEIGHTS"<<std::endl;
 	nnFFNVec[netInd]->importWeights(_initWeights);
 	nnFFNVec[netInd]->runLM(shuffledTrainData,shuffledTrainLabels,shuffledValData,shuffledValLabels,0.0,1e-12,1e10,500,20);
 	
-	// #ifdef LOGGING
-	// logFile << "after first runLM" <<std::endl;
-	// #endif
-	
 	//update weights in MLPack NN
 	nnFFNVec[netInd]->exportWeights(weightsCol);
-	// #ifdef LOGGING
-	// logFile << "pre Assign" <<std::endl;
-	// #endif
 	weightsMat.col(netInd) = weightsCol;
-	// #ifdef LOGGING
-	// logFile << "post Assign" <<std::endl;
-	// #endif
+
 
 	importWeights(weightsMat);
-
 	predict(shuffledTrainData,prediction_eval);
 
 	if(trainingCounter < nNets)
@@ -317,10 +291,6 @@ void LearnNSEPredictor<NetType,OptType>::train(const arma::mat &trainData, const
 	else
 		indMax = nNets;
 	float tmpFloat;
-
-	// #ifdef LOGGING
-	// logFile << "F4, firstTrainingBatch: "<<firstTrainingBatch <<std::endl;
-	// #endif
 
 	for( i = 0; i < indMax; i++){
 		epsilon_tk = arma::accu(Dt_sampBySamp % squaredError(prediction_eval,shuffledTrainLabels).t())/mt;
@@ -364,94 +334,54 @@ void LearnNSEPredictor<NetType,OptType>::train(const arma::mat &trainData, const
 		netWeights[0] = log(1/beta(betaInd,trainingCounter));
 	}
 	else{
+		
+		// Vectorization of single value to make eltwise mult work.
+		sigSlopeVec = sigmoidSlope * arma::ones(omega.n_elem);
+
 		for(i = 0; i < indMax; i++){
 			if (trainingCounter < nNets)
 				omega = arma::regspace(1,trainingCounter-i + 1);
 			else
 				omega = arma::regspace(1,nNets);
 
-			// #ifdef LOGGING
-			// 	logFile << "F8" <<std::endl;
-			// #endif
+			// Recalculate b
 			b = (nNets - i - sigmoidThresh) * arma::ones(omega.n_elem); 
-			// #ifdef LOGGING
-			// 	logFile << "F8a" <<std::endl;
-			// #endif
-			sigSlopeVec = sigmoidSlope * arma::ones(omega.n_elem);
-			// #ifdef LOGGING
-			// 	logFile << "F8b" <<std::endl;
-			// #endif
-			omega = 1/(1+exp(sigSlopeVec % (omega - b))); //For vectors, arma overloads % to be elt multiply. /////////////
+			
+			// Update omega
+			omega = 1/(1+exp(sigSlopeVec % (omega - b))); 
 			omega = omega/arma::accu(omega);
-			// #ifdef LOGGING
-			// 	logFile << "F8c" <<std::endl;
-			// #endif
 			omega_trans = omega.t();	
-			// #ifdef LOGGING
-			// 	logFile << "F9" <<std::endl;
-			// #endif
-			//betaVec = beta.col(i);
 			betaVec = beta.row(i);	
-			// #ifdef LOGGING
-			// 	logFile << "F9a" <<std::endl;
-			// #endif
-
+			
+			// update beta prediction (used in determining network weighting.
 			if(firstTrainingBatch){
-				// #ifdef LOGGING
-				// 	logFile << "F9b, trainingCounter: "<<trainingCounter <<std::endl;
-				// #endif
 				beta_hat = arma::sum(omega_trans % (betaVec.subvec(i,trainingCounter))); 
 			}
 			else {
-				/**************NEED TO USE CIRCULAR INDEXING*******************/
-				// #ifdef LOGGING
-				// 	logFile << "F9b_alt" <<std::endl;
-				// #endif
+				// Circular shift so that the beta lines up correctly.
 				circularShift(betaVec,betaTmp,nNets-betaInd);
-				// #ifdef LOGGING
-				// 	logFile << "F9c" <<std::endl;
-				// #endif
 				beta_hat = arma::accu(omega_trans % betaTmp); 
 			}
-			// #ifdef LOGGING
-			// 	logFile << "F9d" <<std::endl;
-			// #endif
 			if (beta_hat < errThresh)
 				beta_hat = errThresh;
 			netWeights[i] = log(1/beta_hat);
 		}
 	}
-	// #ifdef LOGGING
-	// 	logFile << "F9, netWeights,:"<<netWeights<<" indMax: "<<indMax <<std::endl;
-	// #endif
-
+	// Normalize network weights to sum to 1.
 	for(int i = 0; i < indMax; i++){
-		// #ifdef LOGGING
-		// 	logFile << "F9c, netWeights:"<<netWeights.subvec(0,indMax-1)<<std::endl;
-		// #endif
 		netWeightsTmp[i] = netWeights[i] / arma::accu(netWeights.subvec(0,indMax-1));
 	}
-	// #ifdef LOGGING
-	// 		logFile << "F9d, netWeightsTmp:"<<netWeightsTmp<<std::endl;
-	// #endif
-	/***********CHECK IF PROPER**************/
+	// Copy netweights back.
 	for(int i = 0; i < indMax; i++){
 		netWeights[i] = netWeightsTmp[i];
 	}
 
-	// #ifdef LOGGING
-	// 	logFile << "F10, netWeights:"<<netWeights<< indMax <<std::endl;
-	// #endif
+	// Increment update for next iteration.
 	trainingCounter += 1;
 	betaInd = (betaInd + 1) % nNets;
-	// Step 5: Get error from validation set.
-
-
+	
 }
 
-
-
-/************GOING TO HAVE TO MODIFY THIS TO USE ENSEMBLE PROPERLY************/
 template <class NetType, template <class T> class OptType>
 void LearnNSEPredictor<NetType,OptType>::predict(arma::mat &inputData, arma::mat &prediction) {
 	arma::mat tmpPrediction;
@@ -471,33 +401,11 @@ void LearnNSEPredictor<NetType,OptType>::predict(arma::mat &inputData, arma::mat
 			prediction = tmpPrediction * netWeights[i] + prediction;
 		}
 	}
-	prediction = prediction/indMax;// / nNets;
 	prediction = arma::clamp(prediction,0,1);
 
-	//logFile << "in predict, prediction size: "<< arma::size(prediction)<<std::endl;
-/*
-	arma::colvec inputDataCol;
-	arma::colvec tmpPredictionCol;
-	for(int i=0; i<nnFFNVec.size(); i++) {
-		for(int j=0; j<inputData.n_cols; j++) {
-			inputDataCol = inputData.col(j);
-			nnFFNVec[i]->forwardPropagate(inputDataCol,tmpPredictionCol);
-			if(j==0) {
-				tmpPrediction.set_size(tmpPredictionCol.n_rows,inputData.n_cols);
-			}
-			tmpPrediction.col(j) = tmpPredictionCol;
-		}
-
-		if(i==0) {
-			prediction = tmpPrediction;
-		} else {
-			prediction = tmpPrediction + prediction;
-		}
-	}
-	prediction = prediction / nets.size();
-*/
 }
 
+/******Functions enabling serialization*****/
 template <class NetType, template <class T> class OptType>
 void LearnNSEPredictor<NetType,OptType>::exportWeights(arma::mat &weights) {
 	arma::mat tmpWeights = nets[0]->net.Parameters();
@@ -540,164 +448,3 @@ void LearnNSEPredictor<NetType,OptType>::loadOldRun(std::string filename) {
 
 	importWeights(_weights);
 }
-/*
-int main() {
-	//params
-	const int nNets = 10;
-	const int inputVectorSize = 2;
-	const std::vector<int> hiddenLayerSize = {2,3};
-	const int outputVectorSize = 1;
-
-	const size_t maxEpochs = 10000;	
-
-	arma::mat trainData =  { {0.0,0.0,1.0,1.0},
-							 //{0.0,1.0,0.0,1.0},
-							 //{0.0,0.0,1.0,1.0},
-							 //{0.0,1.0,0.0,1.0},
-							 //{0.0,0.0,1.0,1.0},
-							 {0.0,1.0,0.0,1.0} };
-
-	arma::mat trainLabels =  {0.0,1.0,1.0,0.0};
-
-	arma::mat testData =  {  {0.0,0.0,1.0,1.0},
-							 //{0.0,1.0,0.0,1.0},
-							 //{0.0,0.0,1.0,1.0},
-							 //{0.0,1.0,0.0,1.0},
-							 //{0.0,0.0,1.0,1.0},
-							 {0.0,1.0,0.0,1.0} };
-
-	arma::mat testLabels =   {0.0,1.0,1.0,0.0};
-
-	arma::mat inputLabel(2,1);
-	arma::mat predOutput(1,1);
-
-	arma::mat weights;
-
-	//instantiate NN module
-	LearnNSEPredictor<ThreeLayerNetwork,optimization::RMSprop> nnPred( nNets,
-																			inputVectorSize,
-																			hiddenLayerSize,
-																			outputVectorSize
-																		  );
-	
-	//init optimizer
-	nnPred.initializeRMSProp(0.01,0.88,1e-8,maxEpochs*trainData.n_cols, 1e-18,true);
-	//train NNs
-	nnPred.train(trainData,trainLabels,testData,testLabels);
-	nnPred.exportWeights(weights);
-	std::cout << "trained weights: " << std::endl;
-	std::cout << weights << std::endl;
-	//predict NN
-	inputLabel(0,0) = 0.0;
-	inputLabel(1,0) = 1.0;
-	nnPred.predict(inputLabel,predOutput);
-	std::cout << "Input Label: " << std::endl << inputLabel << std::endl;
-	std::cout << "Predicted Output: " << predOutput << std::endl;
-	//import new weights
-	arma::mat newWeights = arma::zeros((2*2)+(2*2)+(1*2),10);
-	nnPred.importWeights(newWeights);
-	nnPred.exportWeights(weights);
-	std::cout << "weights (mod): " << std::endl;
-	std::cout << weights << std::endl;
-	
-}*/
-
-/*int main() {
-	//params
-	const int nNets = 100;
-	const int inputVectorSize = 2;
-	const std::vector<int> hiddenLayerSize = {2,2};
-	const int outputVectorSize = 1;
-
-	const size_t maxEpochs = 10000;	
-
-	arma::mat trainData =  { {0.0,0.0,1.0,1.0},
-							 //{0.0,1.0,0.0,1.0},
-							 //{0.0,0.0,1.0,1.0},
-							 //{0.0,1.0,0.0,1.0},
-							 //{0.0,0.0,1.0,1.0},
-							 {0.0,1.0,0.0,1.0} };
-
-	arma::mat trainLabels =  {0.0,1.0,1.0,0.0};
-
-	arma::mat testData =  {  {0.0,0.0,1.0,1.0},
-							 //{0.0,1.0,0.0,1.0},
-							 //{0.0,0.0,1.0,1.0},
-							 //{0.0,1.0,0.0,1.0},
-							 //{0.0,0.0,1.0,1.0},
-							 {0.0,1.0,0.0,1.0} };
-
-	arma::mat testLabels =   {0.0,1.0,1.0,0.0};
-
-	arma::mat inputLabel(2,1);
-	arma::mat predOutput(1,1);
-
-
-	//instantiate NN module
-	LearnNSEPredictor<ThreeLayerNetwork,optimization::RMSprop> nnPred( nNets,
-																			inputVectorSize,
-																			hiddenLayerSize,
-																			outputVectorSize
-																		  );
-	
-	//init optimizer
-	nnPred.initializeRMSProp(0.01,0.88,1e-8,maxEpochs*trainData.n_cols, 1e-18,true);
-	//train NNs
-	nnPred.train(trainData,trainLabels,testData,testLabels);
-	//predict NN
-	inputLabel(0,0) = 0.0;
-	inputLabel(1,0) = 1.0;
-	nnPred.predict(inputLabel,predOutput);
-	std::cout << "Input Label: " << std::endl << inputLabel << std::endl;
-	std::cout << "Predicted Output: " << predOutput << std::endl;
-}*/
-/*
-int main() {
-	//params
-	const int nNets = 100;
-	const int inputVectorSize = 2;
-	const std::vector<int> hiddenLayerSize = {2};
-	const int outputVectorSize = 1;
-
-	const size_t maxEpochs = 10000;	
-
-	arma::mat trainData =  { {0.0,0.0,1.0,1.0},
-							 //{0.0,1.0,0.0,1.0},
-							 //{0.0,0.0,1.0,1.0},
-							 //{0.0,1.0,0.0,1.0},
-							 //{0.0,0.0,1.0,1.0},
-							 {0.0,1.0,0.0,1.0} };
-
-	arma::mat trainLabels =  {0.0,1.0,1.0,0.0};
-
-	arma::mat testData =  {  {0.0,0.0,1.0,1.0},
-							 //{0.0,1.0,0.0,1.0},
-							 //{0.0,0.0,1.0,1.0},
-							 //{0.0,1.0,0.0,1.0},
-							 //{0.0,0.0,1.0,1.0},
-							 {0.0,1.0,0.0,1.0} };
-
-	arma::mat testLabels =   {0.0,1.0,1.0,0.0};
-
-	arma::mat inputLabel(2,1);
-	arma::mat predOutput(1,1);
-
-
-	//instantiate NN module
-	LearnNSEPredictor<TwoLayerNetwork,optimization::RMSprop> nnPred( nNets,
-																		  inputVectorSize,
-																		  hiddenLayerSize,
-																		  outputVectorSize
-																		  );
-	
-	//init optimizer
-	nnPred.initializeRMSProp(0.01,0.88,1e-8,maxEpochs*trainData.n_cols, 1e-18,true);
-	//train NNs
-	nnPred.train(trainData,trainLabels,testData,testLabels);
-	//predict NN
-	inputLabel(0,0) = 0.0;
-	inputLabel(1,0) = 1.0;
-	nnPred.predict(inputLabel,predOutput);
-	std::cout << "Input Label: " << std::endl << inputLabel << std::endl;
-	std::cout << "Predicted Output: " << predOutput << std::endl;
-}*/
