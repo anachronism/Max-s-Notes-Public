@@ -1,5 +1,3 @@
-//TODO:
-///(1.) Remove testing set from NN.  Just have training set.
 #ifndef NEURALNETWORKPREDICTOR 
 #define NEURALNETWORKPREDICTOR
 
@@ -57,7 +55,6 @@ class NeuralNetworkPredictor {
 		std::vector<NetType *> nets;
 
 		void initializeRMSProp(double stepSize, double alpha, double eps, size_t maxIterations, double tolerance, bool shuffle);
-
 		void train(const arma::mat &trainData, const arma::mat &trainLabels, double trainDataFrac);
 		void predict(arma::mat &inputData, arma::mat &prediction);
 		void exportWeights(arma::mat &weights);
@@ -73,6 +70,7 @@ class NeuralNetworkPredictor {
 		arma::mat _weights;
 		arma::colvec _initWeights;
 
+		// Serialization used for saving runs after completed.
 		friend class boost::serialization::access;
 
 		template<class Archive>
@@ -84,7 +82,7 @@ class NeuralNetworkPredictor {
 
 		std::vector<FeedForwardNetwork *> nnFFNVec;
 };
-
+// Initialization of NeuralNetPredictor type.
 template <class NetType, template <class T> class OptType>
 NeuralNetworkPredictor<NetType,OptType>::NeuralNetworkPredictor(int nNets, int inputVectorSize, const std::vector<int> hiddenLayerSize, int outputVectorSize) {
 	for(int i=0; i<nNets; i++) {
@@ -99,7 +97,7 @@ NeuralNetworkPredictor<NetType,OptType>::NeuralNetworkPredictor(int nNets, int i
 
 	_mse_perfs.set_size(nNets);
 
-	//initialize my NNs for LM training
+	//initialize NNs for LM training
 	std::vector<int> networkSize;
 	networkSize.resize(hiddenLayerSize.size());
 	for(int i=0; i<hiddenLayerSize.size(); i++) {
@@ -136,6 +134,7 @@ NeuralNetworkPredictor<NetType,OptType>::NeuralNetworkPredictor(int nNets, int i
 	}
 }
 
+// Initialization of RMSProp necessary for using MLPacks network. Never actually used.
 template <class NetType, template <class T> class OptType>
 void NeuralNetworkPredictor<NetType,OptType>::initializeRMSProp(double stepSize, double alpha, double eps, size_t maxIterations, double tolerance, bool shuffle) {
 	for(int i=0; i<_opts.size(); i++) {
@@ -148,6 +147,7 @@ void NeuralNetworkPredictor<NetType,OptType>::initializeRMSProp(double stepSize,
 	}
 }
 
+// Train ensemble.
 template <class NetType, template <class T> class OptType>
 void NeuralNetworkPredictor<NetType,OptType>::train(const arma::mat &trainData, const arma::mat &trainLabels, double trainDataFrac) {
 	arma::mat prediction;
@@ -156,11 +156,7 @@ void NeuralNetworkPredictor<NetType,OptType>::train(const arma::mat &trainData, 
 	arma::mat shuffledValData;
 	arma::mat shuffledValLabels;
 
-	auto start = boost::posix_time::microsec_clock::local_time();
-	// #ifdef LOGGING
-	// debugLogFile << "Training, Time:"<<start <<std::endl;
-	// #endif
-	//resize shuffle buffers
+	//Shuffle data
 	shuffledTrainData.set_size(trainData.n_rows,
 		(int) floor(trainData.n_cols * trainDataFrac));
 	shuffledTrainLabels.set_size(trainLabels.n_rows,
@@ -173,9 +169,7 @@ void NeuralNetworkPredictor<NetType,OptType>::train(const arma::mat &trainData, 
 	//train NNs
 	arma::mat weightsMat;
 	for(int i=0; i<nets.size(); i++) {
-		//nets[i]->net.Train(trainData, trainLabels, *_opts[i]);
-
-		//shuffle data and split into train/val sets
+		
 		arma::colvec shuffledOrder = arma::regspace(0,1,trainData.n_cols -1);
 		shuffledOrder = arma::shuffle(shuffledOrder);
 		for(int i=0; i<trainData.n_cols; i++) {
@@ -190,15 +184,9 @@ void NeuralNetworkPredictor<NetType,OptType>::train(const arma::mat &trainData, 
 			}
 		}
 
-		/***************THIS IS WHERE I SHOULD CHANGE THINGS -- MAX*********************/
 		//init weights to same init values each time and train using LM
 		nnFFNVec[i]->importWeights(_initWeights);
-		/***********************This is the function that will be changed.***************************/
-		// #ifdef LOGGING
-		// logFile<< "Right before runRLM" <<std::endl;
-		// #endif
-		start = boost::posix_time::microsec_clock::local_time();
-	
+		//Run LM or RLM depending on configuration.
 		#if LM==1
 			nnFFNVec[i]->runLM(shuffledTrainData,shuffledTrainLabels,shuffledValData,shuffledValLabels,0.0,1e-12,1e10,500,20);
 		
@@ -206,9 +194,6 @@ void NeuralNetworkPredictor<NetType,OptType>::train(const arma::mat &trainData, 
 			nnFFNVec[i]->runRLM(shuffledTrainData,shuffledTrainLabels,shuffledValData,shuffledValLabels,0.0,1e-12,1e10,500,20);
 		#endif
 
-		// #ifdef LOGGING
-		// 	debugLogFile << "Done training, Time:"<<boost::posix_time::microsec_clock::local_time() - start<<std::endl;
-		// #endif
 		//update weights in MLPack NN
 		arma::colvec weightsCol;
 		nnFFNVec[i]->exportWeights(weightsCol);
@@ -219,23 +204,9 @@ void NeuralNetworkPredictor<NetType,OptType>::train(const arma::mat &trainData, 
 	}
 
 	importWeights(weightsMat);
-	
-
-/*	//test NNs
-	for(int i=0; i<nets.size(); i++) {
-		//run NN
-		nets[i]->net.Predict(testData,prediction);
-		
-		//compute mean squared error
-		_mse_perfs[i] = 0;
-		for(int j=0; j<testData.n_cols; j++) {
-			_mse_perfs[i] = norm(prediction.col(j)-testLabels.col(j),2) + _mse_perfs[i];
-		}
-		_mse_perfs[i] = _mse_perfs[i] / testData.n_cols;
-	}
-*/
 }
 
+// Predict with network.
 template <class NetType, template <class T> class OptType>
 void NeuralNetworkPredictor<NetType,OptType>::predict(arma::mat &inputData, arma::mat &prediction) {
 	arma::mat tmpPrediction;
@@ -248,32 +219,12 @@ void NeuralNetworkPredictor<NetType,OptType>::predict(arma::mat &inputData, arma
 			prediction = tmpPrediction + prediction;
 		}
 	}
-	//prediction = mlpack::math::ClampRange(prediction / nets.size(),0,1);
 	prediction = prediction/nets.size();
 	prediction = arma::clamp(prediction,0,1);
-/*
-	arma::colvec inputDataCol;
-	arma::colvec tmpPredictionCol;
-	for(int i=0; i<nnFFNVec.size(); i++) {
-		for(int j=0; j<inputData.n_cols; j++) {
-			inputDataCol = inputData.col(j);
-			nnFFNVec[i]->forwardPropagate(inputDataCol,tmpPredictionCol);
-			if(j==0) {
-				tmpPrediction.set_size(tmpPredictionCol.n_rows,inputData.n_cols);
-			}
-			tmpPrediction.col(j) = tmpPredictionCol;
-		}
 
-		if(i==0) {
-			prediction = tmpPrediction;
-		} else {
-			prediction = tmpPrediction + prediction;
-		}
-	}
-	prediction = prediction / nets.size();
-*/
 }
 
+/*********Functions that enable serialization***********/
 template <class NetType, template <class T> class OptType>
 void NeuralNetworkPredictor<NetType,OptType>::exportWeights(arma::mat &weights) {
 	arma::mat tmpWeights = nets[0]->net.Parameters();
@@ -316,166 +267,4 @@ void NeuralNetworkPredictor<NetType,OptType>::loadOldRun(std::string filename) {
 
 	importWeights(_weights);
 }
-/*
-int main() {
-	//params
-	const int nNets = 10;
-	const int inputVectorSize = 2;
-	const std::vector<int> hiddenLayerSize = {2,3};
-	const int outputVectorSize = 1;
-
-	const size_t maxEpochs = 10000;	
-
-	arma::mat trainData =  { {0.0,0.0,1.0,1.0},
-							 //{0.0,1.0,0.0,1.0},
-							 //{0.0,0.0,1.0,1.0},
-							 //{0.0,1.0,0.0,1.0},
-							 //{0.0,0.0,1.0,1.0},
-							 {0.0,1.0,0.0,1.0} };
-
-	arma::mat trainLabels =  {0.0,1.0,1.0,0.0};
-
-	arma::mat testData =  {  {0.0,0.0,1.0,1.0},
-							 //{0.0,1.0,0.0,1.0},
-							 //{0.0,0.0,1.0,1.0},
-							 //{0.0,1.0,0.0,1.0},
-							 //{0.0,0.0,1.0,1.0},
-							 {0.0,1.0,0.0,1.0} };
-
-	arma::mat testLabels =   {0.0,1.0,1.0,0.0};
-
-	arma::mat inputLabel(2,1);
-	arma::mat predOutput(1,1);
-
-	arma::mat weights;
-
-	//instantiate NN module
-	NeuralNetworkPredictor<ThreeLayerNetwork,optimization::RMSprop> nnPred( nNets,
-																			inputVectorSize,
-																			hiddenLayerSize,
-																			outputVectorSize
-																		  );
-	
-	//init optimizer
-	nnPred.initializeRMSProp(0.01,0.88,1e-8,maxEpochs*trainData.n_cols, 1e-18,true);
-	//train NNs
-	nnPred.train(trainData,trainLabels,testData,testLabels);
-	nnPred.exportWeights(weights);
-	std::cout << "trained weights: " << std::endl;
-	std::cout << weights << std::endl;
-	//predict NN
-	inputLabel(0,0) = 0.0;
-	inputLabel(1,0) = 1.0;
-	nnPred.predict(inputLabel,predOutput);
-	std::cout << "Input Label: " << std::endl << inputLabel << std::endl;
-	std::cout << "Predicted Output: " << predOutput << std::endl;
-	//import new weights
-	arma::mat newWeights = arma::zeros((2*2)+(2*2)+(1*2),10);
-	nnPred.importWeights(newWeights);
-	nnPred.exportWeights(weights);
-	std::cout << "weights (mod): " << std::endl;
-	std::cout << weights << std::endl;
-	
-}*/
-
-/*int main() {
-	//params
-	const int nNets = 100;
-	const int inputVectorSize = 2;
-	const std::vector<int> hiddenLayerSize = {2,2};
-	const int outputVectorSize = 1;
-
-	const size_t maxEpochs = 10000;	
-
-	arma::mat trainData =  { {0.0,0.0,1.0,1.0},
-							 //{0.0,1.0,0.0,1.0},
-							 //{0.0,0.0,1.0,1.0},
-							 //{0.0,1.0,0.0,1.0},
-							 //{0.0,0.0,1.0,1.0},
-							 {0.0,1.0,0.0,1.0} };
-
-	arma::mat trainLabels =  {0.0,1.0,1.0,0.0};
-
-	arma::mat testData =  {  {0.0,0.0,1.0,1.0},
-							 //{0.0,1.0,0.0,1.0},
-							 //{0.0,0.0,1.0,1.0},
-							 //{0.0,1.0,0.0,1.0},
-							 //{0.0,0.0,1.0,1.0},
-							 {0.0,1.0,0.0,1.0} };
-
-	arma::mat testLabels =   {0.0,1.0,1.0,0.0};
-
-	arma::mat inputLabel(2,1);
-	arma::mat predOutput(1,1);
-
-
-	//instantiate NN module
-	NeuralNetworkPredictor<ThreeLayerNetwork,optimization::RMSprop> nnPred( nNets,
-																			inputVectorSize,
-																			hiddenLayerSize,
-																			outputVectorSize
-																		  );
-	
-	//init optimizer
-	nnPred.initializeRMSProp(0.01,0.88,1e-8,maxEpochs*trainData.n_cols, 1e-18,true);
-	//train NNs
-	nnPred.train(trainData,trainLabels,testData,testLabels);
-	//predict NN
-	inputLabel(0,0) = 0.0;
-	inputLabel(1,0) = 1.0;
-	nnPred.predict(inputLabel,predOutput);
-	std::cout << "Input Label: " << std::endl << inputLabel << std::endl;
-	std::cout << "Predicted Output: " << predOutput << std::endl;
-}*/
-/*
-int main() {
-	//params
-	const int nNets = 100;
-	const int inputVectorSize = 2;
-	const std::vector<int> hiddenLayerSize = {2};
-	const int outputVectorSize = 1;
-
-	const size_t maxEpochs = 10000;	
-
-	arma::mat trainData =  { {0.0,0.0,1.0,1.0},
-							 //{0.0,1.0,0.0,1.0},
-							 //{0.0,0.0,1.0,1.0},
-							 //{0.0,1.0,0.0,1.0},
-							 //{0.0,0.0,1.0,1.0},
-							 {0.0,1.0,0.0,1.0} };
-
-	arma::mat trainLabels =  {0.0,1.0,1.0,0.0};
-
-	arma::mat testData =  {  {0.0,0.0,1.0,1.0},
-							 //{0.0,1.0,0.0,1.0},
-							 //{0.0,0.0,1.0,1.0},
-							 //{0.0,1.0,0.0,1.0},
-							 //{0.0,0.0,1.0,1.0},
-							 {0.0,1.0,0.0,1.0} };
-
-	arma::mat testLabels =   {0.0,1.0,1.0,0.0};
-
-	arma::mat inputLabel(2,1);
-	arma::mat predOutput(1,1);
-
-
-	//instantiate NN module
-	NeuralNetworkPredictor<TwoLayerNetwork,optimization::RMSprop> nnPred( nNets,
-																		  inputVectorSize,
-																		  hiddenLayerSize,
-																		  outputVectorSize
-																		  );
-	
-	//init optimizer
-	nnPred.initializeRMSProp(0.01,0.88,1e-8,maxEpochs*trainData.n_cols, 1e-18,true);
-	//train NNs
-	nnPred.train(trainData,trainLabels,testData,testLabels);
-	//predict NN
-	inputLabel(0,0) = 0.0;
-	inputLabel(1,0) = 1.0;
-	nnPred.predict(inputLabel,predOutput);
-	std::cout << "Input Label: " << std::endl << inputLabel << std::endl;
-	std::cout << "Predicted Output: " << predOutput << std::endl;
-}*/
-
 #endif
