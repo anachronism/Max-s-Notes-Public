@@ -41,13 +41,12 @@ int findIdxInActionList(const std::vector<int> &idxs, arma::Mat<int> & actionLis
 
 void doNothing(const boost::system::error_code&) {};
 
-// std::ofstream logFile("logging.txt",std::ofstream::out);
-// std::ofstream debugLogFile("Debug_log.txt",std::ofstream::out);
 
 //---------------------------------------------------//
 //Main Function
 //---------------------------------------------------//
 int main(int argc, char* argv[]) {
+
 	//---------------------------------------------------//
 	//Command Line Inputs
 	//---------------------------------------------------//
@@ -102,26 +101,21 @@ int main(int argc, char* argv[]) {
 	#endif
 
 	//vars
-	const int RSSI_UDP_PORT = 52008;
-	const int FRAME_UDP_PORT = 52003;
+	//const int RSSI_UDP_PORT = REMOVED;
+	//const int FRAME_UDP_PORT = REMOVED;
 
-	const std::vector<unsigned char> ETHTX_DEST_MAC_ADDR = {0x00,0x0A,0x35,0x02,0x5B,0x74};
-	const std::vector<unsigned char> ETHTX_SRC_MAC_ADDR = {0x08,0x00,0x27,0x06,0xea,0x4e};
-	const unsigned int ETHTX_UDP_SRC_PORT = 50002;
-	const unsigned int ETHTX_UDP_DEST_PORT = 50002;
+	//const std::vector<unsigned char> ETHTX_DEST_MAC_ADDR = REMOVED;
+	//const std::vector<unsigned char> ETHTX_SRC_MAC_ADDR = REMOVED;
+	//const unsigned int ETHTX_UDP_SRC_PORT = REMOVED;
+	//const unsigned int ETHTX_UDP_DEST_PORT = REMOVED;
 	const long ETHTX_TX_INTERVAL_MSEC = 1000;
 
 	const bool continueFromFile = contFromFile;
 	const bool saveToFile = true;	
 	const std::string rlnnLoadFilename = fileName;
 	const std::string rlnnSaveFilename = saveFileName;
-	// std::string rlnnSaveFilename;
-	// if (continueFromFile)
-	// 	rlnnSaveFilename = fileName+"_cont";
-	// else
-	// 	rlnnSaveFilename = fileName;
-	
-	const bool SIMULATION_FLAG = true; //false
+
+	const bool SIMULATION_FLAG = true; 
 	const bool USE_SNR_PROFILE = true;
 	const bool TX_POWER_PATCH_EN = true;
 	
@@ -150,7 +144,7 @@ int main(int argc, char* argv[]) {
 	cogEngParams.cogeng_forceExploreThreshold = 0.95;
 
 	//NeuralNetworkPredictor Params
-	cogEngParams.nnExplore_nNets = nParallelExploreNets; /******************/// CHANGE BACK TO 4
+	cogEngParams.nnExplore_nNets = nParallelExploreNets; 
 	cogEngParams.nnExplore_inputVectorSize = 7;
 	cogEngParams.nnExplore_hiddenLayerSizes.push_back(7);
 	cogEngParams.nnExplore_hiddenLayerSizes.push_back(50);	
@@ -171,6 +165,7 @@ int main(int argc, char* argv[]) {
 	cogEngParams.nnExploit_rmsProp_maxEpochs = 100;
 	cogEngParams.nnExploit_rmsProp_tolerance = 1e-18;
 	cogEngParams.nnExploit_rmsProp_shuffle = true;
+
 	//Application Specific Object Params
 	cogEngParams.nnAppSpec_nOutVecFeatures = 8;
 	cogEngParams.nnAppSpec_frameSize = 16200.0;
@@ -198,16 +193,13 @@ int main(int argc, char* argv[]) {
 	cogEngParams.nnAppSpec_rollOffList << 0.35 << 0.25 << 0.20 <<arma::endr;
 	double RsMin = 0.5*pow(10,6)/(1+cogEngParams.nnAppSpec_rollOffList.min());//0.5
 	double RsMax = 5*pow(10,6)/(1+cogEngParams.nnAppSpec_rollOffList.max());
-	//cogEngParams.nnAppSpec_symbolRateList = arma::trans(arma::regspace(RsMin,0.1*pow(10,6),RsMax)); //0.1MHz spacing
 	cogEngParams.nnAppSpec_symbolRateList <<(1.0*pow(10,6))<<arma::endr;
 	cogEngParams.nnAppSpec_transmitPowerList << -4.0
 											 << -3.5 << -3.0 << -2.5 << -2.0
 											 << -1.5 << -1.0 << -0.5 <<  0.0
 											 << arma::endr;
-	//cogEngParams.nnAppSpec_transmitPowerList << -0.01 << 0.0 << arma::endr;
-	//cogEngParams.nnAppSpec_transmitPowerList = arma::trans(arma::regspace(-10.0,1.0,0.0)); //1.0 dB spacing
-	//TrainingDataBuffer Params
 	cogEngParams.buf_nTrainTestSamples = trainingBufferSize;//200;
+	
 	#if NSE==1
 	cogEngParams.sigmoidSlope = 0.5;
 	cogEngParams.sigmoidThresh = 10;
@@ -224,6 +216,7 @@ int main(int argc, char* argv[]) {
 	logFile << "::cogEngParams.cogeng_trainFrac: " << cogEngParams.cogeng_trainFrac << std::endl;
 	logFile << "::cogEngParams.cogeng_pruneFrac: " << cogEngParams.cogeng_pruneFrac << std::endl;
 	logFile << "::cogEngParams.cogeng_forceExploreThreshold: " << cogEngParams.cogeng_forceExploreThreshold << std::endl;
+	
 	//NeuralNetworkPredictor Params
 	logFile << "::cogEngParams.nnExplore_nNets: " << cogEngParams.nnExplore_nNets << std::endl;
 	logFile << "::cogEngParams.nnExplore_inputVectorSize: " << cogEngParams.nnExplore_inputVectorSize << std::endl;
@@ -241,6 +234,7 @@ int main(int argc, char* argv[]) {
 	}
 	logFile << std::endl;
 	logFile << "::cogEngParams.nnExploit_outputVectorSize: " << cogEngParams.nnExploit_outputVectorSize << std::endl;
+	
 	//RMSProp params
 	logFile << "::cogEngParams.nnExplore_rmsProp_stepSize: " << cogEngParams.nnExplore_rmsProp_stepSize << std::endl;
 	logFile << "::cogEngParams.nnExplore_rmsProp_alpha: " << cogEngParams.nnExplore_rmsProp_alpha << std::endl;
@@ -254,6 +248,7 @@ int main(int argc, char* argv[]) {
 	logFile << "::cogEngParams.nnExploit_rmsProp_maxEpochs: " << cogEngParams.nnExploit_rmsProp_maxEpochs << std::endl;
 	logFile << "::cogEngParams.nnExploit_rmsProp_tolerance: " << cogEngParams.nnExploit_rmsProp_tolerance << std::endl;
 	logFile << "::cogEngParams.nnExploit_rmsProp_shuffle: " << cogEngParams.nnExploit_rmsProp_shuffle << std::endl;
+	
 	//App Specific Params
 	logFile << "::cogEngParams.nnAppSpec_nOutVecFeatures: " << cogEngParams.nnAppSpec_nOutVecFeatures << std::endl;
 	logFile << "::cogEngParams.nnAppSpec_frameSize: " << cogEngParams.nnAppSpec_frameSize << std::endl;
@@ -265,6 +260,7 @@ int main(int argc, char* argv[]) {
 	logFile << "::cogEngParams.nnAppSpec_symbolRateList: " << cogEngParams.nnAppSpec_symbolRateList << std::endl;
 	logFile << "::cogEngParams.nnAppSpec_transmitPowerList: " << cogEngParams.nnAppSpec_transmitPowerList << std::endl;
 	logFile << "::cogEngParams.nnAppSpec_modCodList: " << cogEngParams.nnAppSpec_modCodList << std::endl;
+	
 	//TrainingDataBuffer Params
 	logFile << "::cogEngParams.buf_nTrainTestSamples: " << cogEngParams.buf_nTrainTestSamples << std::endl;
 	logFile << "-----------------" << std::endl;
@@ -305,12 +301,14 @@ int main(int argc, char* argv[]) {
 			}
 		}
 	}
+	
 	for(int i=0; i<actionList.n_cols; i++) {
 		actionList(4,i) = (double) cogEngParams.nnAppSpec_modList(actionListIdxs(2,i));
 		actionList(5,i) = cogEngParams.nnAppSpec_codList(actionListIdxs(2,i));
 		actionList(2,i) = log2(actionList(4,i));
 	}
 
+	//Save all actions in log
 	#ifdef LOGGING
 	logFile << boost::posix_time::microsec_clock::local_time() << std::endl;
 	logFile << "::Action List:" << std::endl;
@@ -323,6 +321,7 @@ int main(int argc, char* argv[]) {
 	logFile << "-----------------" << std::endl;
 	#endif
 
+	// save all action indices in log
 	#ifdef LOGGING
 	logFile << boost::posix_time::microsec_clock::local_time() << std::endl;
 	logFile << "::Action Idxs:" << std::endl;
@@ -360,7 +359,7 @@ int main(int argc, char* argv[]) {
 	ML605Driver::ML605MessageFormat ml605Msg;
 	std::vector<unsigned char> ml605Buf;
 
-	// ASRPDriver asrp("10.55.210.228:80");
+	// ASRPDriver asrp("IP ADDRESS:PORT, REMOVED");
 	//init socket to listen for EsN0/RSSI on port 13
 	boost::asio::io_service io_service;
 	// boost::asio::io_service::work work(io_service);
@@ -381,21 +380,11 @@ int main(int argc, char* argv[]) {
 	
 	//set up way to stop execution cleanly
 	bool quitExecution = false;
-	//std::thread tTimer([&quitExecution]() 
-	//{
-	//	while(!quitExecution) {
-	//		if(std::cin.get() == 'q') {
-	//			quitExecution = true;
-	//		}
-	//	}
-	//});
-
 
 	//load in SNR Profile (if enabled)
 	if(USE_SNR_PROFILE) {
 		std::string line;
 		std::string snrFileLoc;
-		//std::cout <<"HERE"<<std::endl;
 		
 		if (snrProfileUse == "Excellent"){
 			snrFileLoc = "snrFiles/revert_norm_Peregrin_log_160426_163653_esno.txt";
@@ -440,12 +429,10 @@ int main(int argc, char* argv[]) {
 		#ifdef LOGGING
 		logFile << "::Iteration: " << i << std::endl;
 		logFile << "::Start Time: " << boost::posix_time::microsec_clock::local_time() << std::endl;
-		// auto start = high_resolution_clock::now();
 		#endif
 
 		//ACTION CHOOSING--------------------------------//
 		//choose action
-		//TODO: make this it's own thread
 		std::cout<<i<<": Choosing Action"<<std::endl;
 		actionID = rlnnCogEng.chooseAction();
 
@@ -513,7 +500,6 @@ int main(int argc, char* argv[]) {
 		logFile << "::Action Sent: " << boost::posix_time::microsec_clock::local_time() << std::endl;
 		#endif
 
-		//std::cin.get();
 		//block until worst case RTT has passed
 		boost::asio::deadline_timer t(io_service,boost::posix_time::milliseconds(40));
 		t.wait();
@@ -550,12 +536,11 @@ int main(int argc, char* argv[]) {
 			measurementVec(4) = cogEngParams.nnAppSpec_modList(actionListIdxs(2,actionID)); //mod
 			measurementVec(5) = cogEngParams.nnAppSpec_codList(actionListIdxs(2,actionID)); //cod
 		} else {
-			//measurementVec(0) = 6.0+math::Random()-0.5 + cogEngParams.nnAppSpec_transmitPowerList(ml605Msg.transmitPower);
 			double SNR;
 			if(USE_SNR_PROFILE) {
 				SNR = _snrProfileVec[i];
 			} else {
-				if(i<6000) {//6000
+				if(i<6000) {
 					SNR=((double)i)*0.002*2;
 				} else {
 					SNR=12.0-0.002*(i-6000)*2;
@@ -581,26 +566,10 @@ int main(int argc, char* argv[]) {
 
 		//record response of environment
 		std::cout<<i<<": Recording Response" << std::endl;
-/*		if(!SIMULATION_FLAG) {
-			actionIDElements[0] = actionListIdxs(0,actionID);
-			actionIDElements[1] = frameMsg.txPower;
-			actionIDElements[2] = frameMsg.modCod;
-			actionIDElements[3] = frameMsg.rollOff;
-		} else {
-			actionIDElements[0] = actionListIdxs(0,actionID);
-			actionIDElements[1] = ml605Msg.transmitPower;
-			actionIDElements[2] = ml605Msg.modcod;
-			actionIDElements[3] = ml605Msg.rolloff;			
-		}
-		actionID = findIdxInActionList(actionIDElements,actionListIdxs);
-*/
 		rlnnCogEng.recordResponse(actionID, measurementVec);
 		#ifdef LOGGING
-		// auto stop = high_resolution_clock::now();
 		logFile << "::End Time: " << boost::posix_time::microsec_clock::local_time() << std::endl;
 		logFile << std::endl;
-		// auto diff = duration_cast<microseconds>(stop - start);
-		// debugLogFile << "steptime: " <<diff.count()<<std::endl;
 		#endif
 
 		if((boost::posix_time::microsec_clock::local_time()-simStartTime).total_seconds() > runTimeSec) {
@@ -612,7 +581,6 @@ int main(int argc, char* argv[]) {
 	frameServer.close();
 	tRSSI.join();
 	tFrames.join();
-	//tTimer.join();
 
 	logFile.close();
 	if(saveToFile) {
