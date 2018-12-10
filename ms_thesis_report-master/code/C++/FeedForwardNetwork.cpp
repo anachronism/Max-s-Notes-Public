@@ -56,17 +56,6 @@ public:
 	void printOutputs(const arma::colvec &outputs);
 
 private:
-	// struct Neuron {
-	// 	std::vector<double> inputs;
-	// 	std::vector<double> weights;
-	// 	double netVal;
-	// 	double yVal;
-	// 	std::string activationType; //"logsig", "linear" supported
-
-	// 	double actFnSlope;
-	// 	std::vector<double> deltaVal;
-	// };
-
 	std::vector< std::vector<Neuron> > network_;
 	arma::colvec trainedWeights_;
 	RecursiveLMHelper rlmHelper_;
@@ -120,6 +109,7 @@ private:
 				);
 };
 
+ /*****NN operational functions*****/
 void FeedForwardNetwork::applyWeights(const std::vector<double> &weights, const std::vector<double> &inputs, double &output) {
 	double dotProduct = 0.0;
 	for(int i=0; i<inputs.size(); i++) {
@@ -955,84 +945,6 @@ void FeedForwardNetwork::importWeights(const arma::colvec &weights) {
 			}
 		}
 	}
-}
-
-void FeedForwardNetwork::printOutputs(const arma::colvec &outputs) {
-	std::cout << "Outputs: " << std::endl;
-	std::cout << outputs << std::endl;
-	std::cout << std::endl;	
-}
-
-void FeedForwardNetwork::printWeights() {
-	std::cout << "Weights: " << std::endl;
-	for(int i=0; i<network_.size(); i++) {
-		std::cout << "Layer: " << i << std::endl;
-		for(int j=0; j<network_[i].size(); j++) {
-			for(int k=0; k<network_[i][j].weights.size(); k++) {
-				std::cout << network_[i][j].weights[k] << " ";
-			}
-			std::cout << std::endl;
-		}
-	}
-	std::cout << std::endl;
-}
-
-void FeedForwardNetwork::printNeuronInputs() {
-	std::cout << "Neuron Inputs: " << std::endl;
-	for(int i=0; i<network_.size(); i++) {
-		std::cout << "Layer: " << i << std::endl;
-		for(int j=0; j<network_[i].size(); j++) {
-			for(int k=0; k<network_[i][j].inputs.size(); k++) {
-				std::cout << network_[i][j].inputs[k] << " ";
-			}
-			std::cout << std::endl;
-		}
-	}
-	std::cout << std::endl;
-}
-
-void FeedForwardNetwork::printSlopes() {
-	std::cout << "Slopes: " << std::endl;
-	for(int i=0; i<network_.size(); i++) {
-		std::cout << "Layer: " << i << std::endl;
-		for(int j=0; j<network_[i].size(); j++) {
-			std::cout << network_[i][j].actFnSlope << " ";
-		}
-		std::cout << std::endl;
-	}
-	std::cout << std::endl;
-}
-
-void FeedForwardNetwork::printDeltaVals() {
-	std::cout << "deltaVals: " << std::endl;
-	for(int i=0; i<network_.size(); i++) {
-		std::cout << "Layer: " << i << std::endl;
-		for(int j=0; j<network_[i].size(); j++) {
-			for(int k=0; k<network_[i][j].deltaVal.size(); k++) {
-				std::cout << network_[i][j].deltaVal[k] << " ";
-			}
-			std::cout << std::endl;
-		}
-	}
-	std::cout << std::endl;
-}
-
-void FeedForwardNetwork::printErrorVec(const arma::colvec &errorVec) {
-	std::cout << "Error Vec" << std::endl;
-	std::cout << errorVec << std::endl;;
-	std::cout << std::endl;
-}
-
-void FeedForwardNetwork::printJacobianMatrix(const arma::mat &jMat) {
-	std::cout << "Jacobian Matrix:" << std::endl;
-	std::cout<< jMat << std::endl;
-	std::cout<<std::endl;
-}
-
-void FeedForwardNetwork::printWeights(const arma::colvec &weights) {
-	std::cout << "Weights:" << std::endl;
-	std::cout<< weights << std::endl;
-	std::cout<<std::endl;	
 }
 
 #endif
