@@ -9,22 +9,28 @@
 \begin{landscape}
 \begin{figure}[ht]
 \includegraphics[width=\paperwidth]{figures/rough_flow_diagram.eps}
-\caption{placeholder figure for CE block diagram}\label{fig:ceDataFlow}
+\caption{Flow diagram detailing the general logic of the CE.}\label{fig:ceDataFlow}
 \end{figure}
 \end{landscape}
 \par The CE begins by randomly selecting actions and observing the results of these actions, storing unique action-reward pairs in a history buffer. In this experiment, the action is the specific configuration of PHY parameters, and the reward is a fitness score created by taking a weighted combination of different evaluation metrics. These metrics include thoughput, spectral efficiency, bandwidth used, power consumed on transmit, bit error rate (BER), and DC power consumed. Throughput, spectral efficiency, and bandwidth are all calculated based on the chosen set of PHY parameters, while DC power consumed and transmit power consumed are measured. A model of BER based on the other metrics is used as an estimate for BER that doesn't require more than one sample to confirm. Each parameter gets scaled from 0 to 1 based on the values that can be expected from each input. Then, they get combined in a weighted manner to produce the resulting fitness score. The importance of each metric is hard to determine, and can change depending on what priorities the system currently has. Six different weight combinations were arbitrarily selected to represent plausible use cases, and are shown in Table \ref{table:fitMissions}. Once the fitness score is calculated, the action-reward pair is stored in the history buffer until it fills up, after which the Explore and Exploit MLPs get trained. During initial training, the CE uses an action that is fairly robust, to ensure a baseline result. Once done training, the CE has completed its startup process.
-\begin{table}[ht] \textbf{\textit[Fix this table]}
+\begin{table}[ht]
 \centering
-\begin{tabu} to 1.1\textwidth{|X[c]|X[c] X[c] X[c] X[c] X[c] X[c]|}
+\begin{tabu} to 1\textwidth{|X[c]|X[c] X[c] X[c] X[c] X[c] X[c]|}
 	\hline 
-	Mission Name & Throughput&BER&Target BW&Spectral Efficiency&TX Efficiency&DC Power Consumed\\
+	Mission Name & Throughput&BER&Target BW&Spectral Eff.&TX Eff.&DC Power Used\\
+	\hline
 	\hline
 	Emergency& 0.1 &0.8&0.025&0.025&0.025&0.025 \\
-	Cooperation&0.05&0.05&0.4&0.4&0.05&0.05\\
+	\hline
+	Coop- eration&0.05&0.05&0.4&0.4&0.05&0.05\\
+	\hline
 	Power Saving&0.05&0.05&0.05&0.05&0.3&0.5\\
+	\hline
 	Balanced&1/6&1/6&1/6&1/6&1/6&1/6\\
+	\hline
 	Launch&0.2&0.4&0.1&0.1&0.1&0.1\\
-	Multimedia&0.5&0.3&0.05&0.05&0.05&0.05\\
+	\hline
+	Multi- media&0.5&0.3&0.05&0.05&0.05&0.05\\
 	\hline
 \end{tabu}
 \caption{Table containing different ways fitness score can be weighted. These weights were picked in \cite{paulo_theory_paper} to be somewhat representative of possible priorities in space communication.}
@@ -48,7 +54,7 @@
 \par Once the action-choosing logic has occurred, the observed fitness values are added to the history buffer. If the action chosen is unique to any action in the buffer, the results are directly added to the history buffer. Otherwise, the CE updates the observed fitness value of the action in the buffer. If the history buffer is full, the explore and exploit networks get trained. In C++, the training process occurs in parallel with the rest of the CE so that the Explore and Exploit networks can continue to get used during training. The MATLAB simulation does not have the parallel training, but timing information from the simulation is not used. If the history buffer isn't full, the next iteration of the CE occurs.
 \par Training occurs in two phases, one for explore and one for exploit. During each phase, data from the history buffer is randomly split up into training and testing sets. Then, the training algorithm is applied, whether it is LM, RLM, or NSE. Details of the implementation of each will be described in the language-specfic sections. 
 \par The Explore and Exploit MLPs had different architectures, but maintained some similarities. Both used logarithmic activation functions, as well as a linear output function. The Explore MLP was composed of three layers. The input layer takes seven inputs, The first hidden layer has seven nodes, the second hidden layer had fifty nodes, and the output layer has one node. The Exploit MLP was actually six different MLPs, one for each parameter to be predicted. Each sub-MLP has two layers, with seven  inputs, twenty nodes on the first hidden layer and one output. 
-\par In the past, each weight was initialized using MATLAB's default initialization method, Nguen-Widrow initialization \cite{placeholderCitation}. However, due to convergence issues the RLM method encountered while using this, the weight initialization was changed to the Glorot (Xavier) initialization technique\cite{glorot_training}, which sets weights by drawing from gaussian distribution $\mathcal{N}(0,\sigma^2)$, where:
+\par In the past, each weight was initialized using MATLAB's default initialization method, Nguyen-Widrow initialization \cite{nguyen_widrow}. However, due to convergence issues the RLM method encountered while using this, the weight initialization was changed to the Glorot (Xavier) initialization technique\cite{glorot_training}, which sets weights by drawing from gaussian distribution $\mathcal{N}(0,\sigma^2)$, where:
 \begin{align*}
 	\sigma^2 &= \frac{2}{n_{in}+n_{out}}
 \end{align*} 
@@ -57,20 +63,20 @@
 \par Prior to this thesis, the CE was prototyped in MATLAB by Paulo Ferriera\cite{paulo_theory_paper}. It was developed in MATLAB 2015a, using the Parallel Computing Toolbox and the Neural Network Toolbox. It is important to note that the Statistics and Machine Learning toolbox was used and not the Deep Learning toolbox. Both toolboxes are able to create the CE, but have different interfaces. The following section will describe in summary the structure of the baseline simulation, as well as the modifications required to implement RLM and NSE. The full MATLAB code base can be found in Appendix (\ref{app:MatlabCode}).
 \par For all learning methods, the MATLAB neural network structure was used as the foundation. However, for RLM and NSE, the framework was augmented with training functions specific to each algorithm. Most of the previous implementation of the CE was untouched during the thesis. Indeed, the only part that had major changes is the training function, which is abstracted away by default. 
 \par By the nature of RLM, there are a handful of parameters and intermediate values that need to be kept track of. This was done using a matlab struct, RecurseMatrix, found in Appendix \ref{app:MatlabCode:recurseMatrix}. It contains the current Gradient, time, $P$ matrix, $\rho$, $S$, $\alpha$, and the size of a batch to be trained. Beyond that, the algorithm described in \ref{bg:RLM_ref} is followed in a straightforward way.   
-\par  The implementation of Learn++.NSE was modified from the version provided by \cite{placeholderCitation}. When working with the US government, International Traffic in Arms Regulations (ITAR) constraints must always be considered. The code provided by \cite{placeholderCitation} uses a GNU General Public License (GPL), which requires that the source of a program using the library is accessible under the same license. This poses issues to ITAR-controlled code. However, the MATLAB simulation has no ITAR sensitive material, so the license did not matter in this case.
+\par  The implementation of Learn++.NSE was modified from the version provided by \cite{learnpp_repo}. When working with the US government, International Traffic in Arms Regulations (ITAR) constraints must always be considered. The code provided by \cite{learnpp_repo} uses a GNU General Public License (GPL), which requires that the source of a program using the library is accessible under the same license. This poses issues to ITAR-controlled code. However, the MATLAB simulation has no ITAR sensitive material, so the license did not matter in this case.
 %https://github.com/gditzler/IncrementalLearning/tree/master/src \textbf{\textit{DON'T FORGET TO FIX THIS INTO AN ACTUAL CITATION LOL}}. 
-\par The main changes to the code provided by \cite{placeholderCitation} involved adjusting the structure to fit a regression problem instead of a classification problem. Adaboost.R1 was used as a reference point in doing this adjustment, as it is similar in operation, if not how it weighs samples \cite{adaboostPaper}. The cross-entropy loss function that the standard Learn++.NSE algorithm used \cite{learnNseIntro} was replaced by mean squared error (MSE). In addition, during prediction the result was a weighted average of the ensembles, instead of a weighted majority vote. Other than the changes necessary for adapting Learn++.NSE to regression, not much was changed, beyond a handful of extra hyperparameters. 
+\par The main changes to the code provided by \cite{learnpp_repo} involved adjusting the structure to fit a regression problem instead of a classification problem. Adaboost.R1 was used as a reference point in doing this adjustment, as it is similar in operation, if not how it weighs samples \cite{adaboostPaper}. The cross-entropy loss function that the standard Learn++.NSE algorithm used \cite{learnNseIntro} was replaced by mean squared error (MSE). In addition, during prediction the result was a weighted average of the ensembles, instead of a weighted majority vote. Other than the changes necessary for adapting Learn++.NSE to regression, not much was changed, beyond a handful of extra hyperparameters. 
 
 \subsection{C++}
 \par The software architecture used in ground and flight testing was initially introduced by the authors in \cite{tim_implementation_paper}. In order to ensure generality, performance, and reusability, an Object-Oriented programming language was most suitable. C++ was chosen, both for performance and for some of the constructs in the C++11 standard. In addition, many helpful open-source C++ libraries exist. The software was designed and compiled in an Ubuntu 16.04 Linux VM, but was designed to be recompilable for any x86-based operating system, and can, with work, be used with most processor types that have a C++ compiler.
 \par In the design of the CE, drivers for the multiple modems needed to be created. These drivers are restricted by ITAR, ruling out the use of many libraries with "copyleft" licenses, such as the GNU GPL. This greatly reduces the pool of possible libraries to use. 
 \par Despite the wide variety of publicly available ML libraries, many of them do not have APIs for lower-level languages such as C/C++. While this is rapidly changing with the development of embedded ML applications, at the time of the initial CE constructiothe selection of C++-compatible libraries was small \cite{tim_implementation_paper}. Furthermore, many of the existing C/C++ libraries lacked in-depth documentation for the lower-level APIs, had very complex build processes, or were built for larger, more complex applications (such as deep, convolutional NNs). 
-\par MLPack \cite{placeholderCitation} was the library chosen to implement the MLPs in the CE. Because of the time of development the version used was 2.1.1. Since then, MLPack has revamped its ANN architecture, so the library version is important when attempting to replicate these results. MLPack is built on top of Armadillo 7.600.2 \cite{placeholderCitation}, so Armadillo was used for self-written matrix/vector operations and storage as well. By doing this, the interfacing between self-written components and MLPack was simple. 
-\par In order to simplify the interfacing that the CE has to do with Ethernet and UDP/IP for communication with modems (described in Section \ref{methods:hardware}), the Boost.ASIO \cite{placeholderCitation} library was used. This library abstracts away any operating system-specific constructs for handling sockets.
-\par Finally, the Boost.Serialization \cite{placeholderCitation} library was chosen for saving/resuming CE states. 
+\par MLPack \cite{mlpack_lib} was the library chosen to implement the MLPs in the CE. Because of the time of development the version used was 2.1.1. Since then, MLPack has revamped its ANN architecture, so the library version is important when attempting to replicate these results. MLPack is built on top of Armadillo 7.600.2 \cite{armadillo_lib}, so Armadillo was used for self-written matrix/vector operations and storage as well. By doing this, the interfacing between self-written components and MLPack was simple. 
+\par In order to simplify the interfacing that the CE has to do with Ethernet and UDP/IP for communication with modems (described in Section \ref{methods:hardware}), the Boost.ASIO \cite{boost_libs} library was used. This library abstracts away any operating system-specific constructs for handling sockets.
+\par Finally, the Boost.Serialization \cite{boost_libs} library was chosen for saving/resuming CE states. 
 \begin{figure}
 \caption{\textbf{\textit{[Kyle pointed out that our theses can't have figures we didn't draw, does that count for this, which was a figure tim made?]}}}
-\includegraphics[width=\textwidth]{figures/driverList_tmp.png}
+\includegraphics[width=\textwidth]{figures/software-arch.eps}
 \label{fig:timOutlineBlocks}
 \end{figure}
 \par A block diagram of the CE is shown in Figure \ref{fig:timOutlineBlocks}. During the ground tests, the external drivers used are the ViaSat driver and the Advanced Radio for Cognitive Communications (ARCC) driver. The ViaSat modem is used to get the observed $Es/No$ value and the ARCC to simulate the response of the SCaN testbed from the action chosen by the CE. Since the ViaSat modem is connected through ethernet, an ethernet driver is necessary as well. During flight tests, the ARCC driver is replaced by the ML-605 BPSK driver, which also interfaces with the ethernet driver. The CE being tested resides in the RLNN Core section. The description of the RLNN Core will be split into three parts: the baseline method used in 2017, the changes required for the implementation of RLM, and the changes required for the implementation of Learn++.NSE.
@@ -88,8 +94,8 @@
 
 \par During the ground tests that were conducted during July of 2018, the test setup was very similar to that used in 2017 \cite{tim_implementation}.  Similarly to that work, a testbed at NASA GRC was used to create an emulation of the expected on-orbit environment. A simplified block diagram of the setup is shown in Fig. \ref{methods:groundTestFig}. The CE is contained in an Ubuntu 16.04 virtual machine on a Windows 7-based Dell T3600 Precision workstation. The VM was allocated 4 GB of dedicated memory, and shared all eight of the CPU cores (with hyper threading) with the host operating system. The CE is put on a private local area network with the ARCC test platform and the ViaSat DVB-S2 receiver. The CE transmits an action to the ARCC, which then transmitted DVB-S2 frames through a channel emulated by a variable attenuator, according to a measured SNR profile from a previous on-orbit experiment. The noise floor can be adjusted by the noise generator. All RF signals in this test were passed using coaxial cables, insetad of any antennas.
 \begin{figure}[ht]
-\includegraphics[width=\textwidth]{figures/groundHW_tmp.png}
-\caption{\textbf{\textit{[Replace with actual figure once gotten from tim]}}}\label{methods:groundTestFig}
+\includegraphics[width=\textwidth]{figures/test_setups_mod.eps}
+\caption{Block diagram illustrating how data flows through the hardware setup used for the ground test.}\label{methods:groundTestFig}
 \end{figure} 
 
 \subsection{Flight Setup}
@@ -97,7 +103,7 @@
 
 \begin{figure}[ht]
 \includegraphics{figures/system_block_diagram.eps}
-\caption{placeholder.}\label{methods:flightTestFig}
+\caption{Block diagram illustrating how data flows through the hardware setup used for the flight test.}\label{methods:flightTestFig}
 \end{figure} 
 
 \section{Summary}
