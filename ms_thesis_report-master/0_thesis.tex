@@ -68,7 +68,8 @@
 %\usepackage{subfloat}
 \usepackage{epstopdf}
 \usepackage[mathscr]{euscript}
-
+\usepackage{forloop}
+\usepackage{placeins}
 %Code settings:
 \usepackage{listings}
 \usepackage[dvipsnames]{xcolor}
@@ -80,6 +81,7 @@
 \newcommand{\algmargin}{\the\ALG@thistlm}
 \makeatother
 \usepackage{tabu}
+\usepackage{tikz} % For foreach
 \usepackage{soul} %For highlighting, can remove later
 % Fix quotes
 \usepackage [english]{babel}
@@ -116,7 +118,7 @@
 \captionsetup[table]{skip=10pt}
 % leave 1.5in margin to the left and 1in margin to the other
 % sides. Don't print page number in the margin (but rather above it)
-\setlength{\textheight}{8.63in}
+\setlength{\textheight}{9in}
 \setlength{\textwidth}{5.9in}
 \setlength{\topmargin}{-0.2in}
 \setlength{\oddsidemargin}{0.3in}
@@ -201,13 +203,13 @@
 	APPROVED:\\
 
 	\rule{3in}{0.8pt}\\
-	Professor Alex Wyglinski, WPI ECE, Advisor\\
+	Professor Alex Wyglinski, WPI, Advisor\\
 
     \rule{3in}{0.8pt}\\
-	Committee Member \#1\\
+	Professsor D. Richard Brown III, WPI\\
 
     \rule{3in}{0.8pt}\\
-    Committee Member \#2\\
+    Professor Sven Bilen, Penn State\\
 
 	\setlength{\parindent}{1.5em}
 
@@ -228,8 +230,13 @@
 	\pagenumbering{roman} % or {Roman} if you like them capitalized
 	
 	\chapter*{Acknowledgements}
-	 TODO x 2
-	\clearpage
+	 \par I would first like to thank Professor Alex M. Wyglinski for advising me throughout the entire process of this thesis, from providing me with the opportunity to work on this project to providing support and critique during the writing of this document. Without his guidance I would likely have had a much more circuitous path to completion of the thesis.  
+	 \par This research was supported by contributions provided by NASA's John H. Glenn Research Center, as part of an extension of previous work. Special thanks to Richard Reinhart and Dale Mortensen for the expertise provided and administrative assistance provided, as well the rest of the SCaN testbed team who ensured that the testing was conducted as smoothly as possible.
+	 \par Many thanks to Timothy Hackett from Penn State, the student who worked on the Cognitive Engine prior to me. He a major resource on the existing Cognitive Engine code base, as well as how to run the ground and flight tests. His assistance on the first days of ground testing and flight testing was very helpful. 
+	 \par Finally, a thanks to Professor Sven Bilen of Penn State and Professor D. Richard Brown of WPI for being on my M.S. committee and providing feedback on this document. 
+
+
+	 \clearpage
 	
 	% Automagic
 	\tableofcontents
@@ -255,7 +262,14 @@
 	\bibliographystyle{unsrt}
 	\bibliography{7_references}
 
+	\begin{appendices}
+	\include{A1_flightTimeSeries}
+	\include{A2_flightHists}
+	\include{A3_cSimTimeSeries}
+	\include{A4_cSimHists}
 	\include{6_appendix}
+	\end{appendices}
+
 	
 	
 \end{document}

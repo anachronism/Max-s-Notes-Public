@@ -1,8 +1,7 @@
 function  [netOut,f_measure,g_mean,recall,precision,...
     err] = learn_nse_update(net, data_train, labels_train, data_test, ...
   labels_test)
-numClassifiers = 20;%
- % has the 
+numClassifiers = 20;
   if net.initialized == false, net.beta = []; end
   
   mt = size(data_train,2); % number of training examples
@@ -10,10 +9,10 @@ numClassifiers = 20;%
   Dt_sampBySamp = Dt;
   if net.initialized==1
     % STEP 1: Compute error of the existing ensemble on new data
-    predictions = regress_ensemble(net, data_train, labels_train); %%% CONVERT TO REGRESSION.
+    predictions = regress_ensemble(net, data_train, labels_train);
     
     Et_sampBySamp = mse_reg(predictions.',labels_train)/mt;
-    Et = sum(Et_sampBySamp); %%% THIS IS TO BE UPDATED TO FIT FOR REG.
+    Et = sum(Et_sampBySamp); 
     %%% get a beta for each net.
     Bt = Et/(1-Et);           % this is suggested in Metin's IEEE Paper
     Bt_sampBySamp = Et_sampBySamp./(1-Et_sampBySamp);
@@ -24,8 +23,6 @@ numClassifiers = 20;%
     Dt = Wt/sum(Wt);
     Wt_sampBySamp = 1/mt * Bt_sampBySamp;
     Dt_sampBySamp = Wt_sampBySamp/sum(Wt_sampBySamp);
-%     Dt(predictions==labels_train) = Dt(predictions==labels_train) * Bt; 
-%     Dt = Dt/sum(Dt);
   end
   
   % STEP 3: New classifier
@@ -43,10 +40,8 @@ numClassifiers = 20;%
   
   % STEP 4: Evaluate all existing classifiers on new data
   t = size(net.classifiers,2);
-  y = decision_ensemble(net, data_train, labels_train, t); %%% VERIFY IS WHAT"S WANTED
- %   y = regress_ensemble(net, data_train, labels_train);%, t);
-  for k = 1:min(net.t,numClassifiers) %%% DOESNT WORK WITH CYCLICAL.
-%     epsilon_tk  = sum(Dt.*mse_reg(y(:,k),labels_train)/mt^2); %%% CONVERT TO REGRESSION ERROR. CHECK TO SEE IF WEIGHT IS OK.
+  y = decision_ensemble(net, data_train, labels_train, t); 
+  for k = 1:min(net.t,numClassifiers) 
     epsilon_tk = sum(Dt_sampBySamp.*mse_reg(y(:,k),labels_train.')/mt);
     if (k<net.t)&&(epsilon_tk>0.5) 
       epsilon_tk = 0.5;
@@ -69,8 +64,8 @@ numClassifiers = 20;%
     end
     net.w(net.t,net.t) = log(1/net.beta(net.t,net.t));
   else
-    for k = 1:min(net.t,numClassifiers) %%% MAKE SURE THIS IS WHAT"S WANTED>
-      b = t - k - net.b; %%% check
+    for k = 1:min(net.t,numClassifiers) 
+      b = t - k - net.b;
       if net.t <= numClassifiers
         omega = 1:(net.t - k + 1);
       else
@@ -79,7 +74,7 @@ numClassifiers = 20;%
       omega = 1./(1+exp(-net.a*(omega-b)));
       omega = (omega/sum(omega))';
       if net.t <= numClassifiers
-        beta_hat = sum(omega.*(net.beta(k:net.t,k))); %%% FIX TO WORK WITH THE MODULO ASPECT.
+        beta_hat = sum(omega.*(net.beta(k:net.t,k)));
       else
           net.beta(end-numClassifiers+1:end,k)
           beta_hat = sum(omega .* net.beta(end-numClassifiers+1:end,k));
@@ -94,17 +89,12 @@ numClassifiers = 20;%
   % STEP 7: classifier voting weights
   net.classifierweights{end+1} = net.w(end,:);
   
-%   predictions = decision_ensemble(net, data_test, labels_test,t);
-%   [predictions,posterior] = classify_ensemble(net, data_test, labels_test);
-  %errs(ell) = sum(predictions ~= labels_test_t)/numel(labels_test_t);
-  
+  %%% Not great, should actually get.
   f_measure = 0;
   g_mean = 0;
   recall = 0;
   precision = 0;
   err = 0;
-%    [f_measure,g_mean,recall,precision,...
-%     err] = stats(labels_test, predictions, net.mclass);
   
   net.initialized = 1;
   net.t = net.t + 1;

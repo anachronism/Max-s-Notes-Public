@@ -6,7 +6,7 @@ else
 end
      
 for k = 1:n_experts
-  y(:, k) = net.classifiers{k}(data);%classifier_test(net.classifiers{k}, data);
+  y(:, k) = net.classifiers{k}(data);
 end
 if n_experts > 1
     y = mean(y);

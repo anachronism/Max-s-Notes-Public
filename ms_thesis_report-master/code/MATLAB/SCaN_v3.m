@@ -46,11 +46,7 @@ for iterations=1:1
         %Number of parallel NN
         numNN=20;
         NN = cell(1,numNN);
-        
-        
-        
-        
-        
+         
         %Flags [do not change]
         NN_train=0; %checks if NN was trained and controls when to train it again
         NN_train_2=0;
@@ -82,9 +78,7 @@ for iterations=1:1
         %Early stop conditions
         net_exploit.trainParam.max_fail=20;
         net_exploit.trainParam.min_grad=1e-12;
-        
-        %%% TEST
-        tmp_newWeights = getwb(net_exploit);%%%
+        tmp_newWeights = getwb(net_exploit);
         tmp_newWeights = sqrt(2/20) * randn(size(tmp_newWeights)); % 2/(20+1)
         net_exploit = setwb(net_exploit,tmp_newWeights);
         %Number of parallel NN
@@ -251,9 +245,6 @@ for iterations=1:1
             nn_delete=1;%1/4; %after training, delete 50% of oldest actions and retrain only after these percentage of training data is replaced by new training data
             
             history_size=200; % <<<<< NN training window with UNIQUE actions (and its respective performance) >>> designer parameter ANALYZE IMPACT ON PERFORMANCE!!!!!
-%             history_size = 75;
-%             history_size = 50;
-%             history_size = 100;
             % Percentage of training data used for training [for online learning 100% history data can be used] (remaining training data is used for parellel testing)
             nn_parallel_train=1; %(90% for training and 10% for parellel testing)
             
@@ -568,18 +559,15 @@ for iterations=1:1
                     end
                 else
                     if expl==1 % [Exploit]
-                        %fprintf('%f,%f \n',f_observed(jji),e_p);
                         if f_observed(jji)<e_p
                             if e_p-f_observed(jji)>0.1 && (sum(input_norm2==last_e_a)==length(input_norm2)) %RESET "More efficient Recover Mode". Threshold value is a designer parameter (0.5 for specific missions, 0.1 for general)
-                                fprintf('f1');
-                                s0=1; %enters exploration mode
+                               s0=1; %enters exploration mode
                                 %reset NN history
                                 hist_count=0;
                                 temp_hist_=zeros(history_size,10);
                                 jji_reset(jji)=jji;
                                 max_f_observed=0;                                
                             elseif f_observed(jji)<e_p*0.9 %Quick "Recover Mode" using performances from the buffer. Triggers when 90% below previous exploration level
-                                fprintf('f2');
                                 hist2=sortrows(temp_hist_,2);   
                                 ind3=ind3+1;
                                 if ind3==history_size
@@ -588,15 +576,12 @@ for iterations=1:1
                                 nn2=hist2(end-ind3,4:9);
                                 input_norm2=[(nn2(:,1)-T_min)./(T_max-T_min) (-10.*log10(nn2(:,2))-ber_dB_min)./(ber_dB_max-ber_dB_min) (nn2(:,3)-BW_min)./(BW_max-BW_min) (nn2(:,4)-spect_eff_min)./(spect_eff_max-spect_eff_min) (log10(nn2(:,5))-log10(pwr_eff_min))./(log10(pwr_eff_max)-log10(pwr_eff_min)) 1-((nn2(:,6)-P_consu_min_lin)./(P_consu_max_lin-P_consu_min_lin))];
                             elseif f_observed(jji)>e_p*0.9 && ind3>0 %Accepts new exploitation performance 90% above last exploitation threshold 
-                                fprintf('f3 time:%f,f_observed:%f e_p:%f \n',elapsed_time,f_observed(jji),e_p);
                                 e_p=f_observed(jji);
                                 last_e_a=input_norm2;
                             else
-                                fprintf('f4');
                                 input_norm2=last_e_a; %if exploiting and current exploitation performance is worse than previous exploitation performance; roll-back NN2 input
                             end
                         else        
-                            fprintf('f5 time:%f,f_observed:%f e_p:%f \n',elapsed_time,f_observed(jji),e_p);
                             e_p=f_observed(jji); %tracks last exploitation performance
                             last_e_a=input_norm2; %tracks last exploitation NN2 input                            
                         end
@@ -613,7 +598,6 @@ for iterations=1:1
                 %-->> History sliding window (shared among Explore and Exploit NN's) <<--
                 if isempty(find(temp_hist_(:,1)==ii)) %chosen action not present in sliding window
                     hist_count=hist_count+1; %populate
-                    fprintf('%d ',hist_count);%%%
                     if hist_count<=history_size %if sliding window not full yet
                         ind_update=(temp_hist_(:,3)>=1);%index for update
                         temp_hist_(hist_count,:)= [ii f_observed(jji) 1 measured_T(jji) measured_BER_est(jji) measured_W(jji) measured_spec_eff(jji) measured_Pwr_eff(jji) measured_P_consu_lin measured_SNR_lin]; % [actions f_observed time_stamp]
@@ -663,7 +647,7 @@ for iterations=1:1
                     x2 = examples_input(ind2,:)'; %not needed for online operations
                     y2 = examples_target(ind2,:)';%not needed for online operations
                     
-                    %%%
+                    
                     %Training NN1
                     tic
                     %par
@@ -699,7 +683,6 @@ for iterations=1:1
                     %Training
                     x1_exploit = examples_in_exploit(ind1,:)'; %not needed for online operations
                     y1_exploit = examples_out_exploit(ind1,:)'; %not needed for online operations
-                    %%%
                     %Training NN2
                     parfor n_i=1:numNN_exploit
                         for n_j=1:6
@@ -726,7 +709,4 @@ for iterations=1:1
         f_observed2_save{mission_iter} = f_observed2;
         mission_iter = mission_iter + 1;
     end %End of mission loop
-    
-    %eval(sprintf('save(''sim_%d_m4_resetMODE9.mat'')', iterations)) 
-    %eval(sprintf('save(''sim_%d_m4_resetMODE9.mat'')', iterations)) 
 end

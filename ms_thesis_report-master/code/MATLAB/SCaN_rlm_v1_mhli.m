@@ -29,7 +29,7 @@ for iterations=1:numIterations
         updateRecurse = 1;
         if updateRecurse == 1
             NN_recurseMatrix = cell(1,numNN);
-            NN_update_batch_size=10;%%% MAX: This is tweakable.
+            NN_update_batch_size=10;
             alpha_explore = 0.97;
             for i = 1:numNN
                 NN{i}=network(1,3,[0;0;0], [1 ; 0 ; 0], [ 0 0 0; 1 0 0; 0 1 0], [0 0 1]);
@@ -40,8 +40,7 @@ for iterations=1:numIterations
                 NN{i}.inputs{1}.range = [-1 1; -1 1; -1 1; -1 1; -1 1; -1 1; -1 1];
 
                 %NN train function
-                 NN{i}.trainFcn = 'trainlm';  %%% MAX: This is potentially the only change for implementing the recursive LM, implementing own version.
-                
+                 NN{i}.trainFcn = 'trainlm';  
                 %NN dataset division function (training, validation, test)
                  NN{i}.divideFcn='dividerand'; % 70%,15%,15% default
 
@@ -50,19 +49,15 @@ for iterations=1:numIterations
                 % NN1 Layers
                 NN{i}.layers{1}.size = 7;
                 NN{i}.layers{1}.transferFcn = 'logsig';
-%                 NN{i}.inputWeights{1,1}.initFcn = 'randsmall';
-%                 NN{i}.layerWeights{2,1}.initFcn = 'randsmall';
-%                 NN{i}.layerWeights{3,2}.initFcn = 'randsmall';
-                NN{i}.layers{1}.initFcn = 'initnw';%%
+                NN{i}.layers{1}.initFcn = 'initnw';
                 NN{i}.layers{2}.size = 50;
                 NN{i}.layers{2}.transferFcn = 'logsig';
-                NN{i}.layers{2}.initFcn = 'initnw';%%
+                NN{i}.layers{2}.initFcn = 'initnw';
                 NN{i}.layers{3}.size = 1;
                 NN{i}.layers{3}.transferFcn = 'purelin';
-                NN{i}.layers{3}.initFcn = 'initnw';%%
+                NN{i}.layers{3}.initFcn = 'initnw';
 
                 NN{i} = init(NN{i});
-                %%% AN ATTEMPT TO INIT WITH GAUSSIAN INSTEAD.
                 tmp_newWeights = getwb(NN{i});
                 tmp_newWeights =  sqrt(2/15)  * randn(size(tmp_newWeights)); % 2 / (n_out + n_in)
                 NN{i} = setwb(NN{i},tmp_newWeights);
@@ -95,13 +90,9 @@ for iterations=1:numIterations
                 NN_exploit{j,i}.inputs{1}.range = [-1 1; -1 1; -1 1; -1 1; -1 1; -1 1; -1 1];
 
                 %NN train function
-                NN_exploit{j,i}.trainFcn = 'trainlm';%%% MAX: This is potentially the only change for implementing the recursive LM.
+                NN_exploit{j,i}.trainFcn = 'trainlm';
                 %NN dataset division function (training, validation, test)
                 NN_exploit{j,i}.divideFcn='dividerand'; % 70%,15%,15% default
-
-                % NN output functions (help nntransfer)
-%                 NN_exploit{j,i}.inputWeights{1,1}.initFcn = 'randsmall';
-%                 NN_exploit{j,i}.layerWeights{2,1}.initFcn = 'randsmall';
                 NN_exploit{j,i}.layers{1}.initFcn = 'initnw';
                 NN_exploit{j,i}.layers{2}.initFcn = 'initnw';
                 %NN2 Layers
@@ -115,7 +106,7 @@ for iterations=1:numIterations
                 NN_exploit{j,i}.trainParam.min_grad=1e-12;
                 NN_exploit{j,i} = init(NN_exploit{j,i});
                 
-                tmp_newWeights = getwb(NN_exploit{j,i});%%%
+                tmp_newWeights = getwb(NN_exploit{j,i});
                 tmp_newWeights = sqrt(2/20) * randn(size(tmp_newWeights)); % 2/(20+1)
                 NN_exploit{j,i} = setwb(NN_exploit{j,i},tmp_newWeights);
                 
@@ -140,10 +131,6 @@ for iterations=1:numIterations
                 % Fixed - LEO Channel [CLEAR SKY or RAIN]
                 load ('L_fs.mat') %(LEO time series) Clear sky SNR profile at fixed ground receiver
                 TOTAL=(L_fs-max(L_fs))*-1;
-%                 load('esno_curves.mat');
-                % 5 doesn't work, size = 75..
-%                 tmpTotal =time_series(2).esno_viasat; %%% TODO: verify this is what should be done 
-%                 TOTAL = (tmpTotal - max(tmpTotal))* -1;
             else
                 % Fixed - GEO Channel [CLEAR SKY or RAIN]
                 TOTAL=6*ones(1,episode_dur); %GEO clear sky SNR profile >>> 1000 seconds of constant 9 dB SNR profile
@@ -273,9 +260,8 @@ for iterations=1:numIterations
             %%  MAIN SIMULATION ITERATION
             
             
-%             episilon_reset_lim=4e-3; %reset episilon when episilon < episilon_reset_lim
-            %%%
-            episilon_reset_lim = 4e-3;
+            episilon_reset_lim=4e-3; %reset episilon when episilon < episilon_reset_lim
+
             %Log observables (for performance analysis only)
             log_f_max_T=zeros(1,episode_dur);
             log_f_min_BER=zeros(1,episode_dur);
@@ -287,19 +273,10 @@ for iterations=1:numIterations
             
             %Percentage to exclude from training buffer for next retraining
             nn_delete=1;%1/4; %after training, delete 50% of oldest actions and retrain only after these percentage of training data is replaced by new training data
-            
-%             history_size=200; % <<<<< NN training window with UNIQUE actions (and its respective performance) >>> designer parameter ANALYZE IMPACT ON PERFORMANCE!!!!!
-%               history_size = 500;
-            history_size = 75;%50;
-%             history_size = 25;
-%            history_size = 100;
-% history_size = 50;
-% history_size = 5;
-           initial_history_size = 50;
+            history_size=200; % <<<<< NN training window with UNIQUE actions (and its respective performance) >>> designer parameter ANALYZE IMPACT ON PERFORMANCE!!!!!
             
             % Percentage of training data used for training [for online learning 100% history data can be used] (remaining training data is used for parellel testing)
-            nn_parallel_train=0.9; %(90% for training and 10% for parellel testing)
-            
+            nn_parallel_train=0.9; %(90% for training and 10% for parellel testing)     
             hist_count=0;
             ind_mean=0;
             
@@ -368,7 +345,7 @@ for iterations=1:numIterations
                             %%% USAGE OF NNs
                             %Predictions
                             
-                            parfor i_NN=1:numNN %%% parfor
+                            parfor i_NN=1:numNN
                                 y_pred(i_NN,:)=NN{i_NN}(input_explore); %Explore NN prediction
                             end
                             ind_applicable = find(err < 1);
@@ -406,7 +383,6 @@ for iterations=1:numIterations
                                 end
                             end
                         end
-%                         ii
                         track_exploit_err=0; %reset when explore
                         
                         
@@ -424,13 +400,11 @@ for iterations=1:numIterations
                             
                             %%% NN_exploit usage
                             %Predictions
-
                             for n_i=1:numNN_exploit
                                 parfor n_j=1:6
                                     norm_action_pred(n_i,n_j)=NN_exploit{n_j,n_i}(input_norm); %Exploit NN prediction
                                 end
                             end
-                            %%% TRY PICKING RESULT OF LOWEST error thing.
                             norm_action=mean(norm_action_pred);%Ensamble average prediction
                             
                             %Classify modcod
@@ -604,17 +578,15 @@ for iterations=1:numIterations
                 
                 %Adapt/updates NN2 input whenever exploration finds a better performance
                 if  s0==1 && hist_count==0
-                    fprintf('e_p changes, f1, %f\n', f_observed(jji));
                     t_e_change(cnt_debug) = jji;
                     cnt_debug = cnt_debug + 1;
                     e_p=f_observed(jji);
                 elseif s0==1 && hist_count>0
                     if f_observed(jji)>e_p
-                        fprintf('e_p changes,f2, %f\n', f_observed(jji));
                         t_e_change(cnt_debug) = jji;
                         cnt_debug = cnt_debug + 1;
                         e_p=f_observed(jji); 
-                    end %%%%
+                    end 
                 end
                 
                 if f_observed(jji)>max_f_observed
@@ -625,10 +597,7 @@ for iterations=1:numIterations
                 else
                     if expl==1 % [Exploit]
                         if f_observed(jji)<e_p
-%                             f_observed(jji)
-%                             e_p
                             if e_p-f_observed(jji)>0.1 && (sum(input_norm2==last_e_a)==length(input_norm2)) %RESET "More efficient Recover Mode". Threshold value is a designer parameter (0.5 for specific missions, 0.1 for general)
-                                fprintf('f1');
                                 s0=1;%; %enters exploration mode
                                 %reset NN history
                                 hist_count=0;
@@ -636,8 +605,6 @@ for iterations=1:numIterations
                                 jji_reset(jji)=jji;
                                 max_f_observed=0;                                
                             elseif f_observed(jji)<e_p*0.9 %Quick "Recover Mode" using performances from the buffer. Triggers when 90% below previous exploration level
-                                fprintf('f2 time:%f,%f,%f \n',elapsed_time,f_observed(jji),e_p);
-                                %%% temp_hist_
                                 hist2=sortrows(temp_hist_,2);   
                                 ind3=ind3+1;
                                 if ind3==history_size
@@ -646,15 +613,12 @@ for iterations=1:numIterations
                                 nn2=hist2(end-ind3+1,4:9);
                                 input_norm2=[(nn2(:,1)-T_min)./(T_max-T_min) (-10.*log10(nn2(:,2))-ber_dB_min)./(ber_dB_max-ber_dB_min) (nn2(:,3)-BW_min)./(BW_max-BW_min) (nn2(:,4)-spect_eff_min)./(spect_eff_max-spect_eff_min) (log10(nn2(:,5))-log10(pwr_eff_min))./(log10(pwr_eff_max)-log10(pwr_eff_min)) 1-((nn2(:,6)-P_consu_min_lin)./(P_consu_max_lin-P_consu_min_lin))];
                             elseif f_observed(jji)>e_p*0.9 && ind3>0 %Accepts new exploitation performance 90% above last exploitation threshold 
-                                fprintf('f3');
                                 e_p=f_observed(jji);
                                 last_e_a=input_norm2;
-                            else %%% TODO: Must think about this, since 
-                                fprintf('f4, %f, %f\n', f_observed(jji), e_p);
+                            else 
                                 input_norm2=last_e_a; %if exploiting and current exploitation performance is worse than previous exploitation performance; roll-back NN2 input
                             end
                         else  
-                            fprintf('f5 time:%f,f_observed:%f e_p:%f \n',elapsed_time,f_observed(jji),e_p);
                             e_p=f_observed(jji); %tracks last exploitation performance
                             last_e_a=input_norm2; %tracks last exploitation NN2 input                            
                         end
@@ -671,7 +635,6 @@ for iterations=1:numIterations
                 %-->> History sliding window (shared among Explore and Exploit NN's) <<--
                 if isempty(find(temp_hist_(:,1)==ii)) %chosen action not present in sliding window
                     hist_count=hist_count+1; %populate
-%                     fprintf('%d ',hist_count);%%%
                     if hist_count<=history_size %if sliding window not full yet
                         ind_update=(temp_hist_(:,3)>=1);%index for update
                         temp_hist_(hist_count,:)= [ii f_observed(jji) 1 measured_T(jji) measured_BER_est(jji) measured_W(jji) measured_spec_eff(jji) measured_Pwr_eff(jji) measured_P_consu_lin measured_SNR_lin]; % [actions f_observed time_stamp]
@@ -721,13 +684,10 @@ for iterations=1:numIterations
                     x2 = examples_input(ind2,:)'; %not needed for online operations
                     y2 = examples_target(ind2,:)';%not needed for online operations
                     
-                    %%% Here is where training differences happen, and
-                    %%% where I will add things - Max
-                    
                     %Training NN1
                     if updateBatch
                         tic
-                        parfor n_i=1:numNN%parfor n_i=1:numNN
+                        parfor n_i=1:numNN
                             NN{n_i}=train(net,examples_input',examples_target');
                         end
                         elapsedTime =toc;
@@ -736,7 +696,7 @@ for iterations=1:numIterations
                     
                     if updateRecurse
                         tic
-                       parfor n_i=1:numNN %parfor
+                       parfor n_i=1:numNN 
                             ind = randperm(history_size);
                             ind1 = ind(1:Q1);
                             ind2 = ind(Q1+1:end);
@@ -744,16 +704,10 @@ for iterations=1:numIterations
                             y1 = examples_target(ind1,:)';
                             x2 = examples_input(ind2,:)';
                             y2 = examples_target(ind2,:)';
-%                             [NN{i},NN_recurseMatrix{i},err(i)] = trainrlm(NN{i},NN_recurseMatrix{i},examples_input',examples_target');
-                                [NN{n_i},NN_recurseMatrix{n_i},err(n_i)] = trainrlm(NN{n_i},NN_recurseMatrix{n_i},x1,y1,x2,y2);
+                            [NN{n_i},NN_recurseMatrix{n_i},err(n_i)] = trainrlm(NN{n_i},NN_recurseMatrix{n_i},x1,y1,x2,y2);
                                  
                         end
                         elapsedTime = toc;
-                        [minVal, indMin] = min(err);
-                        [maxVal, indMax] = max(err);
-                        fprintf('Time to train explore network is %f, Mean error is %f,\nError [%f, %f] \nIndex[%d, %d] \n',...
-                                    elapsedTime,mean(err), minVal,maxVal, indMin, indMax);
-%                         err
                     end
                     %flags0e
                     NN_train=1;
@@ -780,9 +734,6 @@ for iterations=1:numIterations
                     x1_exploit = examples_in_exploit(ind1,:)'; %not needed for online operations
                     y1_exploit = examples_out_exploit(ind1,:)'; %not needed for online operations
                     
-                    %%% Here is where training differences happen, and
-                    %%% where I will add things - Max
-                    %Training NN2
                     fprintf('training exploit network \n');
                     tic
                     parfor n_i = 1:numNN_exploit%parfor n_i=1:numNN_exploit
@@ -794,24 +745,16 @@ for iterations=1:numIterations
                             y1_exploit = examples_out_exploit(ind1,:)'; %not needed for online operations
                             x2_exploit = examples_in_exploit(ind2,:)';
                             y2_exploit = examples_out_exploit(ind2,:)';
-%                             NN_exploit{n_j,n_i}=train(net_exploit,x1_exploit,y1_exploit(n_j,:)); %training per feeature NN
                             [NN_exploit{n_j,n_i},NN_recurseMatrix_exploit{n_j,n_i}, err_exploit(n_j,n_i)]=trainrlm(NN_exploit{n_j,n_i},NN_recurseMatrix_exploit{n_j,n_i},x1_exploit,y1_exploit(n_j,:), x2_exploit,y2_exploit(n_j,:));
                         end
                     end
                     elapsedTime =toc;
-%                     fprintf('Time to train exploit network is %f sec. \n',elapsedTime);
-                    [minVal, indMin] = min(min(err_exploit));
-                        [maxVal, indMax] = max(max(err_exploit));
-                        fprintf('Time to train exploit network is %f, Mean error is %f\n\n',...
-                                    elapsedTime,mean(mean(err_exploit)));
                     NN_train_exploit=1;
                     
                     %-------------Reset sliding window------------
                     %Delete x percentage of oldest actions
                     temp_hist_=sortrows(temp_hist_,3);
-%                     temp_hist_((history_size-(nn_delete*history_size))+1:end,:)=0;
-%                     temp_hist_((history_size-(nn_delete*history_size))+1:end-1,:)=0;
-                     hist_count=(history_size-(nn_delete*history_size)); %resets hist_count
+                    hist_count=(history_size-(nn_delete*history_size)); %resets hist_count
                     ind3=0;
                     
                     if s0==1
@@ -825,5 +768,4 @@ for iterations=1:numIterations
         f_observed2_save{mission_iter} = f_observed2;
         mission_iter = mission_iter + 1;
     end %End of mission loop
-    %eval(sprintf('save(''sim_%d_m4_resetMODE9.mat'')', iterations)) 
 end

@@ -7,9 +7,6 @@ function [S_new,P_new,w_new] = rlm_update(grad,p, P_old,w_old,t, alpha,err)
     % Calculate Omega
     nGrad = length(grad.');
     omegaRow = zeros(nGrad,1);
-%     if t >= length(grad.')
-%         omegaRow(mod(t,length(grad.'))+1) = 1;
-%     end
     omegaRow(mod(t,length(grad.'))+1) = 1;
 
     Omega = [grad,omegaRow];
@@ -21,7 +18,5 @@ function [S_new,P_new,w_new] = rlm_update(grad,p, P_old,w_old,t, alpha,err)
     % Calculate new weights and intermediate matrices.
     S_new = alpha * Lambda + Omega.'*P_old*Omega;
     P_new = 1/alpha * (P_old - P_old*Omega*pinv(S_new)*Omega.'*P_old);
-%     P_new = P_new ./ max(P_new(:));
-    
     w_new = w_old + P_new*grad*err;
 end
