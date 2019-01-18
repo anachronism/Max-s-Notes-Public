@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6745 64-bit) (preloaded format=pdflatex 2018.8.17)  12 OCT 2018 11:44
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6745 64-bit) (preloaded format=pdflatex 2018.8.17)  3 JAN 2019 11:27
 entering extended mode
 **./mhli_resume.tex
 (mhli_resume.tex
@@ -872,11 +872,11 @@ LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
  ) 
 Here is how much of TeX's memory you used:
- 22753 strings out of 492973
- 380239 string characters out of 3135927
+ 22755 strings out of 492973
+ 380261 string characters out of 3135927
  465979 words of memory out of 3000000
  26386 multiletter control sequences out of 15000+200000
- 597269 words of font info for 77 fonts, out of 3000000 for 9000
+ 597370 words of font info for 78 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
  51i,11n,65p,779b,332s stack positions out of 5000i,500n,10000p,200000b,50000s
 {C:/Program Files/MiKTeX 2.9/fonts/enc/dvips/lm/lm-ec.enc}{C:/Users/Max Li/Ap
@@ -888,7 +888,7 @@ KTeX 2.9/fonts/type1/public/lm/lmss12.pfb><C:/Program Files/MiKTeX 2.9/fonts/ty
 pe1/public/lm/lmss8.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/lm/lmss
 bx10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/lm/lmsso10.pfb>
 Output written on "C:\Users\Max Li\Documents\Max-s-Notes-Public\Resume\build\mh
-li_resume.pdf" (1 page, 145646 bytes).
+li_resume.pdf" (1 page, 145367 bytes).
 PDF statistics:
  69 PDF objects out of 1000 (max. 8388607)
  8 named destinations out of 1000 (max. 500000)
